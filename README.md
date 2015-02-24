@@ -21,6 +21,7 @@ Non. Only default .NET libraries (e.g. System.Data)
 Directory | Description
 ----------| -------------
 /src | the source code (Visual Studio Solution and Projects)
+/src/Workbooster.ObjectDbMapper.Test | Some NUnit tests that also show how the library can be used.
 
 ## License
 
