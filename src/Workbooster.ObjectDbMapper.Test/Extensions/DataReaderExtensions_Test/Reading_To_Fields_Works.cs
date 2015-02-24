@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Workbooster.ObjectDbMapper.Test._TestData;
 
 namespace Workbooster.ObjectDbMapper.Test.Extensions.DataReaderExtensions_Test

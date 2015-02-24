@@ -4,7 +4,6 @@ using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Workbooster.ObjectDbMapper
 {
@@ -27,8 +26,7 @@ namespace Workbooster.ObjectDbMapper
                     if (property != null)
                     {
                         // it's a property
-
-                        property.SetValue(item, reader.ConvertValue(columnInfo.Key, property.PropertyType));
+                        property.SetValue(item, reader.ConvertValue(columnInfo.Key, property.PropertyType), null);
                     }
                     else
                     {
@@ -77,9 +75,9 @@ namespace Workbooster.ObjectDbMapper
             {
                 int fieldIndex = -1;
                 string fieldName = property.Name;
-
+                
                 // check whether the column is marked with a [Column] attribute
-                ColumnAttribute colAttribute = property.GetCustomAttribute<ColumnAttribute>();
+                ColumnAttribute colAttribute = property.GetCustomAttributes(typeof(ColumnAttribute), true).FirstOrDefault() as ColumnAttribute;
 
                 if (colAttribute != null && !String.IsNullOrEmpty(colAttribute.Name))
                 {
