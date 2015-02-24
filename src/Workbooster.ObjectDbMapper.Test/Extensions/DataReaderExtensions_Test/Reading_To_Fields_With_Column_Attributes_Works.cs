@@ -1,37 +1,37 @@
 ﻿using NUnit.Framework;
-using Workbooster.ObjectDbMapper.Test._TestData;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Workbooster.ObjectDbMapper.Test._TestData;
 
 namespace Workbooster.ObjectDbMapper.Test.Extensions.DataReaderExtensions_Test
 {
     [TestFixture]
-    public class Reading_With_Column_Attributes_Works
+    public class Reading_To_Fields_With_Column_Attributes_Works
     {
-        class StringPropertyPerson
+        class StringFieldPerson
         {
             [Column("Name")]
-            public string TestName { get; set; }
+            public string TestName = null;
         }
 
-        class MixedPropertiesPerson
+        class MixedFieldsPerson
         {
             [Column("Id")]
-            public int Key { get; set; }
+            public int Key = default(int);
 
             [Column("Name")]
-            public string TestName { get; set; }
+            public string TestName = null;
 
-            public bool IsMarried { get; set; }
+            public bool IsMarried = default(bool);
 
             [Column("DateOfBirth")]
-            public DateTime Birthday { get; set; }
+            public DateTime Birthday = default(DateTime);
 
-            public string Unknown { get; set; }
+            public string Unknown = null;
         }
 
         private SqlConnection _Connection;
@@ -43,11 +43,11 @@ namespace Workbooster.ObjectDbMapper.Test.Extensions.DataReaderExtensions_Test
         }
 
         [Test]
-        public void Reading_String_Property_Works()
+        public void Reading_String_Field_Works()
         {
             using (_Connection)
             {
-                IList<StringPropertyPerson> people = _Connection.Select<StringPropertyPerson>(@"SELECT * FROM people ORDER BY Id DESC");
+                IList<StringFieldPerson> people = _Connection.Select<StringFieldPerson>(@"SELECT * FROM people ORDER BY Id DESC");
 
                 Assert.AreEqual("Mike", people[0].TestName);
                 Assert.AreEqual("Larry", people[1].TestName);
@@ -55,11 +55,11 @@ namespace Workbooster.ObjectDbMapper.Test.Extensions.DataReaderExtensions_Test
         }
 
         [Test]
-        public void Reading_Mixed_Property_Works()
+        public void Reading_Mixed_Field_Works()
         {
             using (_Connection)
             {
-                IList<MixedPropertiesPerson> people = _Connection.Select<MixedPropertiesPerson>(@"SELECT * FROM people ORDER BY Id DESC");
+                IList<MixedFieldsPerson> people = _Connection.Select<MixedFieldsPerson>(@"SELECT * FROM people ORDER BY Id DESC");
 
                 Assert.AreEqual("Larry", people[1].TestName);
                 Assert.AreEqual(7, people[1].Key);

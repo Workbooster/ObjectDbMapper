@@ -58,8 +58,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Extensions\DataReaderExtensions_Test\Reading_To_Objects_Works.cs" />
-    <Compile Include="Extensions\DataReaderExtensions_Test\Reading_With_Column_Attributes_Works.cs" />
+    <Compile Include="Extensions\DataReaderExtensions_Test\Reading_To_Fields_With_Column_Attributes_Works.cs" />
+    <Compile Include="Extensions\DataReaderExtensions_Test\Reading_To_Fields_Works.cs" />
+    <Compile Include="Extensions\DataReaderExtensions_Test\Reading_To_Properties_Works.cs" />
+    <Compile Include="Extensions\DataReaderExtensions_Test\Reading_To_Properties_With_Column_Attributes_Works.cs" />
     <Compile Include="Extensions\DataReaderExtensions_Test\Reading_With_Parameters_Works.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="_TestData\TestData.cs" />

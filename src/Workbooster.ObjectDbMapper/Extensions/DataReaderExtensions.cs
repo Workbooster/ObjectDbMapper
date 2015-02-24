@@ -14,15 +14,35 @@ namespace Workbooster.ObjectDbMapper
         {
             List<T> listOfItems = new List<T>();
 
-            Dictionary<int, PropertyInfo> dictOfAvailableProperties = reader.GetAvailableProperties<T>();
+            Dictionary<int, MemberInfo> dictOfFoundPropertiesAndFields = reader.GetAvailablePropertiesAndFields<T>();
 
             while (reader.Read())
             {
                 T item = new T();
 
-                foreach (var field in dictOfAvailableProperties)
+                foreach (var columnInfo in dictOfFoundPropertiesAndFields)
                 {
-                    field.Value.SetValue(item, Convert.ChangeType(reader.GetValue(field.Key), field.Value.PropertyType));
+                    PropertyInfo property = columnInfo.Value as PropertyInfo;
+
+                    if (property != null)
+                    {
+                        // it's a property
+
+                        property.SetValue(item, reader.ConvertValue(columnInfo.Key, property.PropertyType));
+                    }
+                    else
+                    {
+                        FieldInfo field = columnInfo.Value as FieldInfo;
+
+                        if (field != null)
+                        {
+                            // it's a field
+
+                            field.SetValue(item, reader.ConvertValue(columnInfo.Key, field.FieldType));
+                        }
+                    }
+
+
                 }
 
                 listOfItems.Add(item);
@@ -31,18 +51,29 @@ namespace Workbooster.ObjectDbMapper
             return listOfItems;
         }
 
+        private static object ConvertValue(this DbDataReader reader, int index, Type expectedType)
+        {
+            return Convert.ChangeType(reader.GetValue(index), expectedType);
+        }
+
         /// <summary>
-        /// Gets a dictionary with the index of the result column and the PropertyInfo of the corresponding type.
+        /// Gets a dictionary with the index of the result column and the MemberInfo of the corresponding property or field.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="reader"></param>
         /// <returns></returns>
-        private static Dictionary<int, PropertyInfo> GetAvailableProperties<T>(this DbDataReader reader)
+        private static Dictionary<int, MemberInfo> GetAvailablePropertiesAndFields<T>(this DbDataReader reader)
         {
-            Dictionary<int, PropertyInfo> dictOfAvailableProperties = new Dictionary<int, PropertyInfo>();
-            PropertyInfo[] listOfAllProperties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            Dictionary<int, MemberInfo> dictOfFoundPropertiesAndFields = new Dictionary<int, MemberInfo>();
 
-            foreach (var property in listOfAllProperties)
+            // load all properties and fields
+
+            const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance;
+            List<MemberInfo> listOfPropertiesAndFields = new List<MemberInfo>();
+            listOfPropertiesAndFields.AddRange(typeof(T).GetFields(bindingFlags));
+            listOfPropertiesAndFields.AddRange(typeof(T).GetProperties(bindingFlags));
+
+            foreach (var property in listOfPropertiesAndFields)
             {
                 int fieldIndex = -1;
                 string fieldName = property.Name;
@@ -61,14 +92,14 @@ namespace Workbooster.ObjectDbMapper
                     fieldIndex = reader.GetOrdinal(fieldName);
                 }
                 catch (IndexOutOfRangeException) { /* ignore */	}
-                
+
                 if (fieldIndex != -1)
                 {
-                    dictOfAvailableProperties.Add(fieldIndex, property);
+                    dictOfFoundPropertiesAndFields.Add(fieldIndex, property);
                 }
             }
 
-            return dictOfAvailableProperties;
+            return dictOfFoundPropertiesAndFields;
         }
     }
 }
