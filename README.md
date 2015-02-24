@@ -16,11 +16,15 @@ For that reasons we decided to start our own little Object-to-Database-Mapper.
 
 Non. Only default .NET libraries (e.g. System.Data)
 
+The unit test project (Workbooster.ObjectDbMapper.Test) needs:
+* [NUnit - testing framework](http://www.nunit.org/)
+
 ## Content
 
 Directory | Description
 ----------| -------------
 /src | the source code (Visual Studio Solution and Projects)
+/src/Workbooster.ObjectDbMapper.Test | Some NUnit tests that also show how the library can be used.
 
 ## License
 
