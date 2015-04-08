@@ -282,15 +282,8 @@ namespace Workbooster.ObjectDbMapper
 
                 try
                 {
-                    if (filter.Operator == FilterComparisonOperatorEnum.Like)
-                    {
-                        param.Value = String.Format("%{0}%", filter.Value);
-                    }
-                    else
-                    {
-                        // convert the value to the type of the member
-                        param.Value = Convert.ChangeType(filter.Value, memberType);
-                    }
+                    // convert the value to the type of the member
+                    param.Value = Convert.ChangeType(filter.Value, memberType);
                 }
                 catch (Exception ex)
                 {
