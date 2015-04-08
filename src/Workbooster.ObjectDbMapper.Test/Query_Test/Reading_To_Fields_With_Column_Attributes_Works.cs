@@ -7,7 +7,7 @@ using System.Text;
 
 using Workbooster.ObjectDbMapper.Test._TestData;
 
-namespace Workbooster.ObjectDbMapper.Test.Extensions.DataReaderExtensions_Test
+namespace Workbooster.ObjectDbMapper.Query_Test
 {
     [TestFixture]
     public class Reading_To_Fields_With_Column_Attributes_Works
@@ -47,7 +47,7 @@ namespace Workbooster.ObjectDbMapper.Test.Extensions.DataReaderExtensions_Test
         {
             using (_Connection)
             {
-                IList<StringFieldPerson> people = _Connection.Select<StringFieldPerson>(@"SELECT * FROM people ORDER BY Id DESC");
+                IList<StringFieldPerson> people = _Connection.Select<StringFieldPerson>(@"SELECT * FROM people ORDER BY Id DESC").ToList();
 
                 Assert.AreEqual("Mike", people[0].TestName);
                 Assert.AreEqual("Larry", people[1].TestName);
@@ -59,7 +59,7 @@ namespace Workbooster.ObjectDbMapper.Test.Extensions.DataReaderExtensions_Test
         {
             using (_Connection)
             {
-                IList<MixedFieldsPerson> people = _Connection.Select<MixedFieldsPerson>(@"SELECT * FROM people ORDER BY Id DESC");
+                IList<MixedFieldsPerson> people = _Connection.Select<MixedFieldsPerson>(@"SELECT * FROM people ORDER BY Id DESC").ToList();
 
                 Assert.AreEqual("Larry", people[1].TestName);
                 Assert.AreEqual(7, people[1].Key);

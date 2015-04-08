@@ -4,43 +4,42 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
-using Workbooster.ObjectDbMapper;
 using Workbooster.ObjectDbMapper.Test._TestData;
 
-namespace Workbooster.ObjectDbMapper.Test.Extensions.DataReaderExtensions_Test
+namespace Workbooster.ObjectDbMapper.Query_Test
 {
     [TestFixture]
-    public class Reading_To_Properties_Works
+    public class Reading_To_Fields_Works
     {
-        class StringPropertyPerson
+        class StringFieldPerson
         {
-            public string Name { get; set; }
+            public string Name = null;
         }
 
-        class IntPropertyPerson
+        class IntFieldPerson
         {
-            public int Id { get; set; }
+            public int Id = default(int);
         }
 
-        class BoolPropertyPerson
+        class BoolFieldPerson
         {
-            public bool IsMarried { get; set; }
+            public bool IsMarried = default(bool);
         }
 
-        class DateTimePropertyPerson
+        class DateTimeFieldPerson
         {
-            public DateTime DateOfBirth { get; set; }
+            public DateTime DateOfBirth = default(DateTime);
         }
 
-        class DateTimeAsStringPropertyPerson
+        class DateTimeAsStringFieldPerson
         {
-            public string DateOfBirth { get; set; }
+            public string DateOfBirth = null;
         }
 
-        class UnknownPropertyPerson
+        class UnknownFieldPerson
         {
-            public string UnknownOne { get; set; }
-            public string UnknownTwo { get; set; }
+            public string UnknownOne = null;
+            public string UnknownTwo = null;
         }
 
         private SqlConnection _Connection;
@@ -56,18 +55,18 @@ namespace Workbooster.ObjectDbMapper.Test.Extensions.DataReaderExtensions_Test
         {
             using (_Connection)
             {
-                IList<StringPropertyPerson> people = _Connection.Select<StringPropertyPerson>(@"SELECT * FROM people ORDER BY Id DESC");
+                IList<StringFieldPerson> people = _Connection.Select<StringFieldPerson>(@"SELECT * FROM people ORDER BY Id DESC").ToList();
 
                 Assert.AreEqual(7, people.Count);
             }
         }
 
         [Test]
-        public void Reading_String_Property_Works()
+        public void Reading_String_Field_Works()
         {
             using (_Connection)
             {
-                IList<StringPropertyPerson> people = _Connection.Select<StringPropertyPerson>(@"SELECT * FROM people ORDER BY Id DESC");
+                IList<StringFieldPerson> people = _Connection.Select<StringFieldPerson>(@"SELECT * FROM people ORDER BY Id DESC").ToList();
 
                 Assert.AreEqual("Mike", people[0].Name);
                 Assert.AreEqual("Larry", people[1].Name);
@@ -75,11 +74,11 @@ namespace Workbooster.ObjectDbMapper.Test.Extensions.DataReaderExtensions_Test
         }
 
         [Test]
-        public void Reading_Int_Property_Works()
+        public void Reading_Int_Field_Works()
         {
             using (_Connection)
             {
-                IList<IntPropertyPerson> people = _Connection.Select<IntPropertyPerson>(@"SELECT * FROM people ORDER BY Id DESC");
+                IList<IntFieldPerson> people = _Connection.Select<IntFieldPerson>(@"SELECT * FROM people ORDER BY Id DESC").ToList();
 
                 Assert.AreEqual(8, people[0].Id);
                 Assert.AreEqual(7, people[1].Id);
@@ -87,11 +86,11 @@ namespace Workbooster.ObjectDbMapper.Test.Extensions.DataReaderExtensions_Test
         }
 
         [Test]
-        public void Reading_Bool_Property_Works()
+        public void Reading_Bool_Field_Works()
         {
             using (_Connection)
             {
-                IList<BoolPropertyPerson> people = _Connection.Select<BoolPropertyPerson>(@"SELECT * FROM people ORDER BY Id DESC");
+                IList<BoolFieldPerson> people = _Connection.Select<BoolFieldPerson>(@"SELECT * FROM people ORDER BY Id DESC").ToList();
 
                 Assert.AreEqual(true, people[0].IsMarried);
                 Assert.AreEqual(false, people[1].IsMarried);
@@ -99,11 +98,11 @@ namespace Workbooster.ObjectDbMapper.Test.Extensions.DataReaderExtensions_Test
         }
 
         [Test]
-        public void Reading_DateTime_Property_Works()
+        public void Reading_DateTime_Field_Works()
         {
             using (_Connection)
             {
-                IList<DateTimePropertyPerson> people = _Connection.Select<DateTimePropertyPerson>(@"SELECT * FROM people ORDER BY Id DESC");
+                IList<DateTimeFieldPerson> people = _Connection.Select<DateTimeFieldPerson>(@"SELECT * FROM people ORDER BY Id DESC").ToList();
 
                 Assert.AreEqual(new DateTime(1953, 9, 23), people[0].DateOfBirth);
                 Assert.AreEqual(new DateTime(1969, 1, 26), people[1].DateOfBirth);
@@ -111,11 +110,11 @@ namespace Workbooster.ObjectDbMapper.Test.Extensions.DataReaderExtensions_Test
         }
 
         [Test]
-        public void Reading_DateTime_As_String_Property_Works()
+        public void Reading_DateTime_As_String_Field_Works()
         {
             using (_Connection)
             {
-                IList<DateTimeAsStringPropertyPerson> people = _Connection.Select<DateTimeAsStringPropertyPerson>(@"SELECT * FROM people ORDER BY Id DESC");
+                IList<DateTimeAsStringFieldPerson> people = _Connection.Select<DateTimeAsStringFieldPerson>(@"SELECT * FROM people ORDER BY Id DESC").ToList();
 
                 Assert.AreEqual(Convert.ToString(new DateTime(1953, 9, 23)), people[0].DateOfBirth);
                 Assert.AreEqual(Convert.ToString(new DateTime(1969, 1, 26)), people[1].DateOfBirth);
@@ -123,13 +122,13 @@ namespace Workbooster.ObjectDbMapper.Test.Extensions.DataReaderExtensions_Test
         }
 
         [Test]
-        public void Reading_Wrong_Property_Throws_FormatException()
+        public void Reading_Wrong_Field_Throws_FormatException()
         {
             using (_Connection)
             {
                 Assert.Throws<FormatException>(delegate
                 {
-                    IList<DateTimePropertyPerson> people = _Connection.Select<DateTimePropertyPerson>(@"SELECT DateOfBirth = Name FROM people ORDER BY Id DESC");
+                    IList<DateTimeFieldPerson> people = _Connection.Select<DateTimeFieldPerson>(@"SELECT DateOfBirth = Name FROM people ORDER BY Id DESC").ToList();
                 });
             }
         }
@@ -139,11 +138,10 @@ namespace Workbooster.ObjectDbMapper.Test.Extensions.DataReaderExtensions_Test
         {
             using (_Connection)
             {
-                IList<UnknownPropertyPerson> people = _Connection.Select<UnknownPropertyPerson>(@"SELECT * FROM people ORDER BY Id DESC");
+                IList<UnknownFieldPerson> people = _Connection.Select<UnknownFieldPerson>(@"SELECT * FROM people ORDER BY Id DESC").ToList();
 
                 Assert.AreEqual(7, people.Count);
             }
         }
-
     }
 }
