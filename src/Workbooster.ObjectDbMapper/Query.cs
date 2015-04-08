@@ -119,6 +119,7 @@ namespace Workbooster.ObjectDbMapper
 
         private IEnumerator<T> Read(DbDataReader reader)
         {
+            string className = typeof(T).Name;
             Dictionary<int, MemberInfo> dictOfFoundPropertiesAndFields = GetAvailablePropertiesAndFields(reader);
 
             while (reader.Read())
@@ -132,7 +133,7 @@ namespace Workbooster.ObjectDbMapper
                     if (property != null)
                     {
                         // it's a property
-                        property.SetValue(item, ConvertValue(reader, columnInfo.Key, property.PropertyType), null);
+                        property.SetValue(item, ConvertValue(reader, columnInfo.Key, property.PropertyType, className, property.Name), null);
                     }
                     else
                     {
@@ -142,7 +143,7 @@ namespace Workbooster.ObjectDbMapper
                         {
                             // it's a field
 
-                            field.SetValue(item, ConvertValue(reader, columnInfo.Key, field.FieldType));
+                            field.SetValue(item, ConvertValue(reader, columnInfo.Key, field.FieldType, className, field.Name));
                         }
                     }
 
@@ -153,9 +154,34 @@ namespace Workbooster.ObjectDbMapper
             }
         }
 
-        private object ConvertValue(DbDataReader reader, int index, Type expectedType)
+        private object ConvertValue(DbDataReader reader, int index, Type expectedType, string className, string fieldName)
         {
-            return Convert.ChangeType(reader.GetValue(index), expectedType);
+            // read the value
+            object value = reader.GetValue(index);
+
+            // check for null value in combination with not nullable types
+
+            if ((expectedType.IsValueType && Nullable.GetUnderlyingType(expectedType) == null)
+                && (value == null || value is DBNull))
+            {
+                throw new Exception(String.Format(
+                    "Error while trying to assign a null value on the field '{0}' in class '{1}'. Please use a nullable type or change the database column to not nullable.",
+                    fieldName, className));
+            }
+
+            if (value == null || value is DBNull)
+            {
+                return null;
+            }
+            else
+            {
+                // if the value is not null try to convert into the expected type
+
+                // get the type for the conversion (not nullable)
+                Type notNullableType = Nullable.GetUnderlyingType(expectedType) ?? expectedType;
+
+                return Convert.ChangeType(value, notNullableType);
+            }
         }
 
         /// <summary>
