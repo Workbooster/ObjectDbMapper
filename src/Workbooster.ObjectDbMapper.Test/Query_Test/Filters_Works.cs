@@ -77,7 +77,7 @@ namespace Workbooster.ObjectDbMapper.Test.Query_Test
         }
 
         [Test]
-        public void Reading_Records_Filtered_By_Group_Of_Mixed_Values_Works()
+        public void Reading_Records_Filtered_By_Group_Of_String_And_Bool_Values_Works()
         {
             using (_Connection)
             {
@@ -85,6 +85,20 @@ namespace Workbooster.ObjectDbMapper.Test.Query_Test
                     .Where(FilterGroup.New()
                     .Add("Name", FilterComparisonOperatorEnum.Equal, "mike")
                     .Add("IsMarried", FilterComparisonOperatorEnum.Equal, false));
+
+                Assert.AreEqual(2, people.Count());
+            }
+        }
+
+        [Test]
+        public void Reading_Records_Filtered_By_Group_Of_LikeString_And_Bool_Values_Works()
+        {
+            using (_Connection)
+            {
+                var people = _Connection.Select<Person>(@"SELECT * FROM people")
+                    .Where(FilterGroup.New()
+                    .Add("Name", FilterComparisonOperatorEnum.Like, "M%")
+                    .Add("IsMarried", FilterComparisonOperatorEnum.Equal, true));
 
                 Assert.AreEqual(2, people.Count());
             }

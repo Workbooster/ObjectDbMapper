@@ -47,10 +47,10 @@ namespace Workbooster.ObjectDbMapper.Query_Test
         {
             using (_Connection)
             {
-                IList<StringFieldPerson> people = _Connection.Select<StringFieldPerson>(@"SELECT * FROM people ORDER BY Id DESC").ToList();
+                IList<StringFieldPerson> people = _Connection.Select<StringFieldPerson>(@"SELECT * FROM people ORDER BY Id ASC").ToList();
 
                 Assert.AreEqual("Mike", people[0].TestName);
-                Assert.AreEqual("Larry", people[1].TestName);
+                Assert.AreEqual("Steve", people[1].TestName);
             }
         }
 
@@ -59,12 +59,12 @@ namespace Workbooster.ObjectDbMapper.Query_Test
         {
             using (_Connection)
             {
-                IList<MixedFieldsPerson> people = _Connection.Select<MixedFieldsPerson>(@"SELECT * FROM people ORDER BY Id DESC").ToList();
+                IList<MixedFieldsPerson> people = _Connection.Select<MixedFieldsPerson>(@"SELECT * FROM people ORDER BY Id ASC").ToList();
 
-                Assert.AreEqual("Larry", people[1].TestName);
-                Assert.AreEqual(7, people[1].Key);
-                Assert.AreEqual(false, people[1].IsMarried);
-                Assert.AreEqual(new DateTime(1969, 1, 26), people[1].Birthday);
+                Assert.AreEqual("Larry", people[5].TestName);
+                Assert.AreEqual(7, people[5].Key);
+                Assert.AreEqual(false, people[5].IsMarried);
+                Assert.AreEqual(new DateTime(1969, 1, 26), people[5].Birthday);
             }
         }
     }

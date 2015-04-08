@@ -55,9 +55,9 @@ namespace Workbooster.ObjectDbMapper.Query_Test
         {
             using (_Connection)
             {
-                IList<StringFieldPerson> people = _Connection.Select<StringFieldPerson>(@"SELECT * FROM people ORDER BY Id DESC").ToList();
+                IList<StringFieldPerson> people = _Connection.Select<StringFieldPerson>(@"SELECT * FROM people ORDER BY Id ASC").ToList();
 
-                Assert.AreEqual(7, people.Count);
+                Assert.AreEqual(9, people.Count);
             }
         }
 
@@ -66,10 +66,10 @@ namespace Workbooster.ObjectDbMapper.Query_Test
         {
             using (_Connection)
             {
-                IList<StringFieldPerson> people = _Connection.Select<StringFieldPerson>(@"SELECT * FROM people ORDER BY Id DESC").ToList();
+                IList<StringFieldPerson> people = _Connection.Select<StringFieldPerson>(@"SELECT * FROM people ORDER BY Id ASC").ToList();
 
                 Assert.AreEqual("Mike", people[0].Name);
-                Assert.AreEqual("Larry", people[1].Name);
+                Assert.AreEqual("Steve", people[1].Name);
             }
         }
 
@@ -78,10 +78,10 @@ namespace Workbooster.ObjectDbMapper.Query_Test
         {
             using (_Connection)
             {
-                IList<IntFieldPerson> people = _Connection.Select<IntFieldPerson>(@"SELECT * FROM people ORDER BY Id DESC").ToList();
+                IList<IntFieldPerson> people = _Connection.Select<IntFieldPerson>(@"SELECT * FROM people ORDER BY Id ASC").ToList();
 
-                Assert.AreEqual(8, people[0].Id);
-                Assert.AreEqual(7, people[1].Id);
+                Assert.AreEqual(2, people[0].Id);
+                Assert.AreEqual(3, people[1].Id);
             }
         }
 
@@ -90,10 +90,10 @@ namespace Workbooster.ObjectDbMapper.Query_Test
         {
             using (_Connection)
             {
-                IList<BoolFieldPerson> people = _Connection.Select<BoolFieldPerson>(@"SELECT * FROM people ORDER BY Id DESC").ToList();
+                IList<BoolFieldPerson> people = _Connection.Select<BoolFieldPerson>(@"SELECT * FROM people ORDER BY Id ASC").ToList();
 
-                Assert.AreEqual(true, people[0].IsMarried);
-                Assert.AreEqual(false, people[1].IsMarried);
+                Assert.AreEqual(false, people[0].IsMarried);
+                Assert.AreEqual(true, people[2].IsMarried);
             }
         }
 
@@ -102,10 +102,10 @@ namespace Workbooster.ObjectDbMapper.Query_Test
         {
             using (_Connection)
             {
-                IList<DateTimeFieldPerson> people = _Connection.Select<DateTimeFieldPerson>(@"SELECT * FROM people ORDER BY Id DESC").ToList();
+                IList<DateTimeFieldPerson> people = _Connection.Select<DateTimeFieldPerson>(@"SELECT * FROM people ORDER BY Id ASC").ToList();
 
-                Assert.AreEqual(new DateTime(1953, 9, 23), people[0].DateOfBirth);
-                Assert.AreEqual(new DateTime(1969, 1, 26), people[1].DateOfBirth);
+                Assert.AreEqual(new DateTime(1985, 6, 13), people[0].DateOfBirth);
+                Assert.AreEqual(new DateTime(1978, 2, 3), people[1].DateOfBirth);
             }
         }
 
@@ -114,10 +114,10 @@ namespace Workbooster.ObjectDbMapper.Query_Test
         {
             using (_Connection)
             {
-                IList<DateTimeAsStringFieldPerson> people = _Connection.Select<DateTimeAsStringFieldPerson>(@"SELECT * FROM people ORDER BY Id DESC").ToList();
+                IList<DateTimeAsStringFieldPerson> people = _Connection.Select<DateTimeAsStringFieldPerson>(@"SELECT * FROM people ORDER BY Id ASC").ToList();
 
-                Assert.AreEqual(Convert.ToString(new DateTime(1953, 9, 23)), people[0].DateOfBirth);
-                Assert.AreEqual(Convert.ToString(new DateTime(1969, 1, 26)), people[1].DateOfBirth);
+                Assert.AreEqual(Convert.ToString(new DateTime(1985, 6, 13)), people[0].DateOfBirth);
+                Assert.AreEqual(Convert.ToString(new DateTime(1978, 2, 3)), people[1].DateOfBirth);
             }
         }
 
@@ -128,7 +128,7 @@ namespace Workbooster.ObjectDbMapper.Query_Test
             {
                 Assert.Throws<FormatException>(delegate
                 {
-                    IList<DateTimeFieldPerson> people = _Connection.Select<DateTimeFieldPerson>(@"SELECT DateOfBirth = Name FROM people ORDER BY Id DESC").ToList();
+                    IList<DateTimeFieldPerson> people = _Connection.Select<DateTimeFieldPerson>(@"SELECT DateOfBirth = Name FROM people ORDER BY Id ASC").ToList();
                 });
             }
         }
@@ -138,9 +138,9 @@ namespace Workbooster.ObjectDbMapper.Query_Test
         {
             using (_Connection)
             {
-                IList<UnknownFieldPerson> people = _Connection.Select<UnknownFieldPerson>(@"SELECT * FROM people ORDER BY Id DESC").ToList();
+                IList<UnknownFieldPerson> people = _Connection.Select<UnknownFieldPerson>(@"SELECT * FROM people ORDER BY Id ASC").ToList();
 
-                Assert.AreEqual(7, people.Count);
+                Assert.AreEqual(9, people.Count);
             }
         }
     }
