@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Workbooster.ObjectDbMapper
 {
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, Inherited = true, AllowMultiple = false)]
     public sealed class ColumnAttribute : Attribute
     {
         public string Name { get; set; }

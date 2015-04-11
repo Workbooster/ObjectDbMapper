@@ -54,11 +54,11 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\InsertCommand_Test\Inserting_With_Nondynamic_Field_Mappings_Works.cs" />
     <Compile Include="Query_Test\Filters_Works.cs" />
     <Compile Include="Query_Test\Reading_To_Fields_With_Column_Attributes_Works.cs" />
     <Compile Include="Query_Test\Reading_To_Fields_Works.cs" />
