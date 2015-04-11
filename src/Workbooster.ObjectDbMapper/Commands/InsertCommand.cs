@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Text;
 using Workbooster.ObjectDbMapper.Attributes;
+using Workbooster.ObjectDbMapper.Reflection;
 
 namespace Workbooster.ObjectDbMapper.Commands
 {
@@ -27,7 +28,7 @@ namespace Workbooster.ObjectDbMapper.Commands
         #region PROPERTIES
 
         public DbConnection Connection { get; private set; }
-        public string TableName { get; private set; }
+        public EntityDefinition Entity { get; private set; }
         public bool EnableDynamicMapping { get; private set; }
 
         #endregion
@@ -37,8 +38,10 @@ namespace Workbooster.ObjectDbMapper.Commands
         public InsertCommand(DbConnection connection, string tableName, bool enableDynamicMapping = false)
         {
             Connection = connection;
-            TableName = tableName;
+            Entity = ReflectionHelper.GetEntityDefinitionFromType<T>();
+            Entity.DbTableName = tableName;
             EnableDynamicMapping = enableDynamicMapping;
+
             _FieldMappings = new Dictionary<string, Func<T, object>>();
             _FactoryCommand = Connection.CreateCommand();
         }
@@ -46,19 +49,13 @@ namespace Workbooster.ObjectDbMapper.Commands
         public InsertCommand(DbConnection connection, bool enableDynamicMapping = false)
         {
             Connection = connection;
+            Entity = ReflectionHelper.GetEntityDefinitionFromType<T>();
             EnableDynamicMapping = enableDynamicMapping;
+
             _FieldMappings = new Dictionary<string, Func<T, object>>();
             _FactoryCommand = Connection.CreateCommand();
 
-            // check whether the class is marked with a [Table] attribute
-            TableAttribute tblAttribute = typeof(T).GetCustomAttributes(typeof(TableAttribute), true).FirstOrDefault() as TableAttribute;
-
-            if (tblAttribute != null && !String.IsNullOrEmpty(tblAttribute.Name))
-            {
-                // get the tablename from the attribute
-                TableName = tblAttribute.Name;
-            }
-            else
+            if (String.IsNullOrEmpty(Entity.DbTableName))
             {
                 throw new Exception("Couldn't resolve the tablename. Please instantiate the InsertCommand either with a tablename or add a [Table] attribute to the data class.");
             }
@@ -102,7 +99,7 @@ namespace Workbooster.ObjectDbMapper.Commands
             // prepare the SQL INSERT statement
             string columnNames = String.Join(",", _FieldMappings.Keys.ToArray());
             string parameterNames = _FieldMappings.Keys.Aggregate("", (acc, s) => acc += ",@" + s).Remove(0, 1);
-            string insertStatement = String.Format("INSERT INTO [{0}] ({1}) VALUES({2})", TableName, columnNames, parameterNames);
+            string insertStatement = String.Format("INSERT INTO [{0}] ({1}) VALUES({2})", Entity.DbTableName, columnNames, parameterNames);
 
             foreach (var item in listOfItems)
             {

@@ -6,14 +6,13 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Workbooster.ObjectDbMapper.Filters;
+using Workbooster.ObjectDbMapper.Reflection;
 
 namespace Workbooster.ObjectDbMapper
 {
     public class Query<T> : IEnumerable<T> where T : new()
     {
         #region MEMBERS
-
-        private Dictionary<string, MemberInfo> _PropertiesAndFields;
 
         /// <summary>
         /// only used to create DbParameters
@@ -26,6 +25,7 @@ namespace Workbooster.ObjectDbMapper
 
         public DbConnection Connection { get; set; }
         public string BaseSql { get; set; }
+        public EntityDefinition Entity { get; private set; }
         public List<DbParameter> Parameters { get; set; }
         public List<IFilter> Filters { get; set; }
 
@@ -33,13 +33,30 @@ namespace Workbooster.ObjectDbMapper
 
         #region PUBLIC METHODS
 
+        public Query(DbConnection connection)
+        {
+            Connection = connection;
+            Entity = ReflectionHelper.GetEntityDefinitionFromType<T>();
+
+            if (String.IsNullOrEmpty(Entity.DbTableName))
+            {
+                throw new Exception("Couldn't resolve the tablename. Please instantiate the Query either with a SQL SELECT statement or add a [Table] attribute to the data class.");
+            }
+
+            BaseSql = String.Format("SELECT * FROM {0}", Entity.DbTableName);
+
+            Parameters = new List<DbParameter>();
+            Filters = new List<IFilter>();
+            _FactoryCommand = Connection.CreateCommand();
+        }
+
         public Query(DbConnection connection, string baseSql)
         {
             Connection = connection;
             BaseSql = baseSql;
+            Entity = ReflectionHelper.GetEntityDefinitionFromType<T>();
             Parameters = new List<DbParameter>();
             Filters = new List<IFilter>();
-            _PropertiesAndFields = GetAllPropertiesAndFields();
             _FactoryCommand = Connection.CreateCommand();
         }
 
@@ -120,8 +137,7 @@ namespace Workbooster.ObjectDbMapper
 
         private IEnumerator<T> Read(DbDataReader reader)
         {
-            string className = typeof(T).Name;
-            Dictionary<int, MemberInfo> dictOfFoundPropertiesAndFields = GetAvailablePropertiesAndFields(reader);
+            Dictionary<int, FieldDefinition> dictOfFoundPropertiesAndFields = GetAvailablePropertiesAndFields(reader);
 
             while (reader.Read())
             {
@@ -129,45 +145,27 @@ namespace Workbooster.ObjectDbMapper
 
                 foreach (var columnInfo in dictOfFoundPropertiesAndFields)
                 {
-                    PropertyInfo property = columnInfo.Value as PropertyInfo;
-
-                    if (property != null)
-                    {
-                        // it's a property
-                        property.SetValue(item, ConvertValue(reader, columnInfo.Key, property.PropertyType, className, property.Name), null);
-                    }
-                    else
-                    {
-                        FieldInfo field = columnInfo.Value as FieldInfo;
-
-                        if (field != null)
-                        {
-                            // it's a field
-
-                            field.SetValue(item, ConvertValue(reader, columnInfo.Key, field.FieldType, className, field.Name));
-                        }
-                    }
-
-
+                    object value = ConvertValue(reader, columnInfo.Key, columnInfo.Value);
+                    columnInfo.Value.SetValue<T>(item, value);
                 }
 
                 yield return item;
             }
         }
 
-        private object ConvertValue(DbDataReader reader, int index, Type expectedType, string className, string fieldName)
+        private object ConvertValue(DbDataReader reader, int index, FieldDefinition field)
         {
             // read the value
             object value = reader.GetValue(index);
 
             // check for null value in combination with not nullable types
 
-            if ((expectedType.IsValueType && Nullable.GetUnderlyingType(expectedType) == null)
+            if ((field.MemberType.IsValueType && Nullable.GetUnderlyingType(field.MemberType) == null)
                 && (value == null || value is DBNull))
             {
                 throw new Exception(String.Format(
                     "Error while trying to assign a null value on the field '{0}' in class '{1}'. Please use a nullable type or change the database column to not nullable.",
-                    fieldName, className));
+                    field.MemberName, field.Entity.TypeName));
             }
 
             if (value == null || value is DBNull)
@@ -179,71 +177,36 @@ namespace Workbooster.ObjectDbMapper
                 // if the value is not null try to convert into the expected type
 
                 // get the type for the conversion (not nullable)
-                Type notNullableType = Nullable.GetUnderlyingType(expectedType) ?? expectedType;
+                Type notNullableType = Nullable.GetUnderlyingType(field.MemberType) ?? field.MemberType;
 
                 return Convert.ChangeType(value, notNullableType);
             }
         }
 
         /// <summary>
-        /// Gets a dictionary with the index of the result column and the MemberInfo of the corresponding property or field.
+        /// Gets a dictionary with the index of the result column and the field definition.
         /// </summary>
         /// <param name="reader"></param>
         /// <returns></returns>
-        private Dictionary<int, MemberInfo> GetAvailablePropertiesAndFields(DbDataReader reader)
+        private Dictionary<int, FieldDefinition> GetAvailablePropertiesAndFields(DbDataReader reader)
         {
-            Dictionary<int, MemberInfo> dictOfFoundPropertiesAndFields = new Dictionary<int, MemberInfo>();
+            Dictionary<int, FieldDefinition> dictOfFoundPropertiesAndFields = new Dictionary<int, FieldDefinition>();
 
-            foreach (var item in _PropertiesAndFields)
+            foreach (var item in Entity.FieldDefinitions)
             {
                 int fieldIndex = -1;
 
                 try
                 {
                     // try to find the column by name
-                    fieldIndex = reader.GetOrdinal(item.Key);
+                    fieldIndex = reader.GetOrdinal(item.DbColumnName);
                 }
                 catch (IndexOutOfRangeException) { /* ignore */	}
 
                 if (fieldIndex != -1)
                 {
-                    dictOfFoundPropertiesAndFields.Add(fieldIndex, item.Value);
+                    dictOfFoundPropertiesAndFields.Add(fieldIndex, item);
                 }
-            }
-
-            return dictOfFoundPropertiesAndFields;
-        }
-
-        /// <summary>
-        /// Gets a dictionary with the index of the result column and the MemberInfo of the corresponding property or field.
-        /// </summary>
-        /// <param name="reader"></param>
-        /// <returns></returns>
-        private Dictionary<string, MemberInfo> GetAllPropertiesAndFields()
-        {
-            Dictionary<string, MemberInfo> dictOfFoundPropertiesAndFields = new Dictionary<string, MemberInfo>();
-
-            // load all properties and fields
-
-            const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance;
-            List<MemberInfo> listOfPropertiesAndFields = new List<MemberInfo>();
-            listOfPropertiesAndFields.AddRange(typeof(T).GetFields(bindingFlags));
-            listOfPropertiesAndFields.AddRange(typeof(T).GetProperties(bindingFlags));
-
-            foreach (var property in listOfPropertiesAndFields)
-            {
-                string fieldName = property.Name;
-
-                // check whether the column is marked with a [Column] attribute
-                ColumnAttribute colAttribute = property.GetCustomAttributes(typeof(ColumnAttribute), true).FirstOrDefault() as ColumnAttribute;
-
-                if (colAttribute != null && !String.IsNullOrEmpty(colAttribute.Name))
-                {
-                    fieldName = colAttribute.Name;
-                }
-
-
-                dictOfFoundPropertiesAndFields.Add(fieldName, property);
             }
 
             return dictOfFoundPropertiesAndFields;
@@ -267,33 +230,11 @@ namespace Workbooster.ObjectDbMapper
 
         private string GetFilterText(FilterComparison filter)
         {
-            if (_PropertiesAndFields.ContainsKey(filter.FieldName))
+            FieldDefinition field = Entity.FieldDefinitions.Where(f => f.DbColumnName == filter.FieldName).FirstOrDefault();
+
+            if (field != null)
             {
                 string text = "";
-                Type memberType = typeof(string);
-                DbType? dbType = null;
-                var memberInfo = _PropertiesAndFields[filter.FieldName];
-
-                // get the datatype of the field/property
-
-                if (memberInfo is PropertyInfo)
-                {
-                    memberType = ((PropertyInfo)memberInfo).PropertyType;
-                }
-                else if (memberInfo is FieldInfo)
-                {
-                    memberType = ((FieldInfo)memberInfo).FieldType;
-                }
-
-                // check whether a different DbType is set
-
-                // check whether the column is marked with a [Column] attribute
-                ColumnAttribute colAttribute = memberInfo.GetCustomAttributes(typeof(ColumnAttribute), true).FirstOrDefault() as ColumnAttribute;
-
-                if (colAttribute != null)
-                {
-                    dbType = colAttribute.DbType;
-                }
 
                 // create a SQL parameter
 
@@ -302,34 +243,35 @@ namespace Workbooster.ObjectDbMapper
                 // generate a unique parameter name from a GUID
                 param.ParameterName = Guid.NewGuid().ToString().Replace('-', '_');
 
-                if (dbType != null)
+                // check whether a different DbType is set
+                if (field.DbType != null)
                 {
-                    param.DbType = (DbType)dbType;
+                    param.DbType = (DbType)field.DbType;
                 }
 
                 try
                 {
                     // convert the value to the type of the member
-                    param.Value = Convert.ChangeType(filter.Value, memberType);
+                    param.Value = Convert.ChangeType(filter.Value, field.MemberType);
                 }
                 catch (Exception ex)
                 {
                     throw new Exception(String.Format(
                         "Error while converting the value '{0}' into '{1}' while creating a filter for the field '{2}'.",
-                        filter.Value, memberType.Name, filter.FieldName), ex);
+                        filter.Value, field.MemberType.Name, filter.FieldName), ex);
                 }
 
                 // add the parameter to the local collection
                 Parameters.Add(param);
 
-                if (memberType == typeof(string)
+                if (field.MemberType == typeof(string)
                     && filter.Operator == FilterComparisonOperatorEnum.ExactlyEqual)
                 {
                     text = String.Format(" [{0}] = @{1} COLLATE sql_latin1_general_cp1_cs_as",
                         filter.FieldName,
                         param.ParameterName);
                 }
-                else if (memberType == typeof(string)
+                else if (field.MemberType == typeof(string)
                   && filter.Operator == FilterComparisonOperatorEnum.ExactlyEqual)
                 {
                     text = String.Format(" [{0}] <> @{1} COLLATE sql_latin1_general_cp1_cs_as",
