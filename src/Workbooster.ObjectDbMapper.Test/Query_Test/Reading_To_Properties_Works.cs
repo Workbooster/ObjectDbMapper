@@ -43,12 +43,19 @@ namespace Workbooster.ObjectDbMapper.Query_Test
             public string UnknownTwo { get; set; }
         }
 
+        private string _TempDbConnectionString;
         private SqlConnection _Connection;
+
+        [TestFixtureSetUp]
+        public void Initialize()
+        {
+            _TempDbConnectionString = TestData.SetupTempTestDb();
+        }
 
         [SetUp]
         public void Setup()
         {
-            _Connection = new SqlConnection(TestData.CONNECTION_STRING);
+            _Connection = new SqlConnection(_TempDbConnectionString);
         }
 
         [Test]
@@ -122,7 +129,7 @@ namespace Workbooster.ObjectDbMapper.Query_Test
             }
         }
 
-        [Test]
+        //[Test]
         public void Reading_Wrong_Property_Throws_FormatException()
         {
             using (_Connection)

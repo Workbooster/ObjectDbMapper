@@ -12,7 +12,6 @@ namespace Workbooster.ObjectDbMapper.Test._TestData
         public static readonly string TEST_DATA_DIRECTORY = @"_TestData\";
         public static readonly string DATABASE_FILE_NAME = @"data.mdf";
         public static readonly string CONNECTION_STRING_PATTERN = @"Data Source=(LocalDB)\v11.0; AttachDbFilename={0}; Integrated Security=True;";
-        public static readonly string CONNECTION_STRING = String.Format(CONNECTION_STRING_PATTERN, Path.Combine(Environment.CurrentDirectory, TEST_DATA_DIRECTORY + DATABASE_FILE_NAME));
 
         /// <summary>
         /// Creates a backup of the test data. Please call this on test setup.
