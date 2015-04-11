@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Workbooster.ObjectDbMapper.Filters;
 
 namespace Workbooster.ObjectDbMapper
 {
@@ -339,7 +340,7 @@ namespace Workbooster.ObjectDbMapper
                 {
                     text = String.Format(" [{0}] {1} @{2}",
                         filter.FieldName,
-                        GetComparisonOperatorSql(filter.Operator),
+                        FilterUtilities.GetSqlComparisonOperator(filter.Operator),
                         param.ParameterName);
                 }
 
@@ -364,7 +365,7 @@ namespace Workbooster.ObjectDbMapper
                 }
                 else
                 {
-                    sql += " " + GetGroupOperatorSql(group.Operatror);
+                    sql += " " + FilterUtilities.GetSqlGroupOperator(group.Operatror);
                 }
 
                 if (filter is FilterGroup)
@@ -382,50 +383,6 @@ namespace Workbooster.ObjectDbMapper
             }
 
             return sql;
-        }
-
-        private string GetGroupOperatorSql(FilterGroupOperatorEnum op)
-        {
-            switch (op)
-            {
-                case FilterGroupOperatorEnum.And:
-                    return "AND";
-                case FilterGroupOperatorEnum.Or:
-                    return " OR";
-                default:
-                    throw new Exception(
-                        String.Format("Unknown group operator: '{0}'",
-                            Enum.GetName(typeof(FilterGroupOperatorEnum), op)));
-            }
-        }
-
-        private string GetComparisonOperatorSql(FilterComparisonOperatorEnum op)
-        {
-            switch (op)
-            {
-                case FilterComparisonOperatorEnum.Equal:
-                    return "LIKE";
-                case FilterComparisonOperatorEnum.NotEqual:
-                    return "NOT LIKE";
-                case FilterComparisonOperatorEnum.ExactlyEqual:
-                    return "=";
-                case FilterComparisonOperatorEnum.ExactlyNotEqual:
-                    return "<>";
-                case FilterComparisonOperatorEnum.GreaterThan:
-                    return ">";
-                case FilterComparisonOperatorEnum.GreaterThanOrEqual:
-                    return ">=";
-                case FilterComparisonOperatorEnum.LessThan:
-                    return "<";
-                case FilterComparisonOperatorEnum.LessThanOrEqual:
-                    return "<=";
-                case FilterComparisonOperatorEnum.Like:
-                    return "LIKE";
-                default:
-                    throw new Exception(
-                        String.Format("Unknown comparison operator: '{0}'",
-                            Enum.GetName(typeof(FilterComparisonOperatorEnum), op)));
-            }
         }
 
         #endregion
