@@ -89,7 +89,7 @@ namespace Workbooster.ObjectDbMapper.Reflection
             foreach (var member in listOfPropertiesAndFields)
             {
                 // check whether an ignore attribite is set
-                if (member.GetCustomAttributes(typeof(IgnoreAttribute), true).Count() == null)
+                if (member.GetCustomAttributes(typeof(IgnoreAttribute), true).Count() == 0)
                 {
                     // check whether the field is on the ignore-list
                     if (listOfIgnoredFieldNames == null || listOfIgnoredFieldNames.Contains(member.Name) == false)
