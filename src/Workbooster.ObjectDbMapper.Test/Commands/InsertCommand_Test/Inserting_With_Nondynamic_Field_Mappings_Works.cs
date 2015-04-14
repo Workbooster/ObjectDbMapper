@@ -96,7 +96,7 @@ OR (Name = 'InsertTest-3' AND IsMarried = 0)";
 
                 for (int i = 0; i < 10000; i++)
                 {
-                    people.Add(new Person() { Id = i + 100, Name = "InsertTest-"+i, IsMarried = false, DateOfBirth = new DateTime(1985, 2, 17) });
+                    people.Add(new Person() { Id = i + 100, Name = "InsertTest-" + i, IsMarried = false, DateOfBirth = new DateTime(1985, 2, 17) });
                 }
 
                 InsertCommand<Person> cmd = new InsertCommand<Person>(_Connection, "People", false);
@@ -114,6 +114,46 @@ WHERE Name LIKE 'InsertTest%'
 ";
 
                 Assert.AreEqual(10000, checkCmd.ExecuteScalar());
+            }
+        }
+
+        [Test]
+        public void Using_Insert_Command_Multiple_Times_Works()
+        {
+            using (_Connection)
+            {
+                List<Person> people = new List<Person>() { 
+                    new Person() { Id = 101, Name = "InsertTest-1", IsMarried= false, DateOfBirth = new DateTime(1985, 2,17) },
+                    new Person() { Id = 102, Name = "InsertTest-2", IsMarried= true, DateOfBirth = new DateTime(1972, 11,2) },
+                };
+
+                List<Person> people2 = new List<Person>() { 
+                    new Person() { Id = 103, Name = "InsertTest-3", IsMarried= true, DateOfBirth = new DateTime(1953, 8,15) },
+                    new Person() { Id = 104, Name = "InsertTest-4", IsMarried= false, DateOfBirth = new DateTime(1962, 4,2) },
+                };
+
+                InsertCommand<Person> cmd = new InsertCommand<Person>(_Connection, "People", false);
+                cmd.Map("Name", p => p.Name);
+                cmd.Map("IsMarried", p => p.IsMarried);
+                cmd.Map("DateOfBirth", p => p.DateOfBirth);
+                
+                // execute with the first collection
+                cmd.Execute(people);
+
+                // execute with the second collection
+                cmd.Execute(people2);
+
+                // check
+                var checkCmd = _Connection.CreateCommand();
+                checkCmd.CommandText = @"
+SELECT COUNT(*) 
+FROM People 
+WHERE (Name = 'InsertTest-1' AND IsMarried = 0) 
+OR (Name = 'InsertTest-2' AND IsMarried = 1) 
+OR (Name = 'InsertTest-3' AND IsMarried = 1)
+OR (Name = 'InsertTest-4' AND IsMarried = 0)";
+
+                Assert.AreEqual(4, checkCmd.ExecuteScalar());
             }
         }
     }
