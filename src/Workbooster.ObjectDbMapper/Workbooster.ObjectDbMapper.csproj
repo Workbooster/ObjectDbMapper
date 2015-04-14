@@ -52,6 +52,7 @@
     <Compile Include="Filters\FilterGroupOperatorEnum.cs" />
     <Compile Include="Filters\FilterUtilities.cs" />
     <Compile Include="Filters\IFilter.cs" />
+    <Compile Include="Filters\SqlFilterBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Query.cs" />
     <Compile Include="Reflection\EntityDefinition.cs" />
