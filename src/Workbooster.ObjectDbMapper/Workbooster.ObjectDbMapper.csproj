@@ -43,6 +43,8 @@
     <Compile Include="Attributes\IgnoreAttribute.cs" />
     <Compile Include="Attributes\TableAttribute.cs" />
     <Compile Include="Commands\InsertCommand.cs" />
+    <Compile Include="Commands\MappingCommandBase.cs" />
+    <Compile Include="Commands\UpdateCommand.cs" />
     <Compile Include="Extensions\ConnectionExcetions.cs" />
     <Compile Include="Filters\FilterComparison.cs" />
     <Compile Include="Filters\FilterComparisonOperatorEnum.cs" />
