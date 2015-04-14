@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Workbooster.ObjectDbMapper.Attributes;
 using Workbooster.ObjectDbMapper.Reflection;
@@ -16,12 +17,7 @@ namespace Workbooster.ObjectDbMapper.Commands
         /// Key = ColumnName
         /// Value = Mapping for the return value
         /// </summary>
-        private Dictionary<string, Func<T, object>> _FieldMappings;
-
-        /// <summary>
-        /// only used to create DbParameters
-        /// </summary>
-        private DbCommand _FactoryCommand;
+        private Dictionary<string, Func<T, object>> _FieldMappings = new Dictionary<string, Func<T, object>>();
 
         #endregion
 
@@ -29,31 +25,15 @@ namespace Workbooster.ObjectDbMapper.Commands
 
         public DbConnection Connection { get; private set; }
         public EntityDefinition Entity { get; private set; }
-        public bool EnableDynamicMapping { get; private set; }
 
         #endregion
 
         #region PUBLIC METHODS
 
-        public InsertCommand(DbConnection connection, string tableName, bool enableDynamicMapping = false)
+        public InsertCommand(DbConnection connection)
         {
             Connection = connection;
             Entity = ReflectionHelper.GetEntityDefinitionFromType<T>();
-            Entity.DbTableName = tableName;
-            EnableDynamicMapping = enableDynamicMapping;
-
-            _FieldMappings = new Dictionary<string, Func<T, object>>();
-            _FactoryCommand = Connection.CreateCommand();
-        }
-
-        public InsertCommand(DbConnection connection, bool enableDynamicMapping = false)
-        {
-            Connection = connection;
-            Entity = ReflectionHelper.GetEntityDefinitionFromType<T>();
-            EnableDynamicMapping = enableDynamicMapping;
-
-            _FieldMappings = new Dictionary<string, Func<T, object>>();
-            _FactoryCommand = Connection.CreateCommand();
 
             if (String.IsNullOrEmpty(Entity.DbTableName))
             {
@@ -61,11 +41,69 @@ namespace Workbooster.ObjectDbMapper.Commands
             }
         }
 
+        public InsertCommand(DbConnection connection, string tableName)
+        {
+            Connection = connection;
+            Entity = ReflectionHelper.GetEntityDefinitionFromType<T>();
+            Entity.DbTableName = tableName;
+        }
+
+        /// <summary>
+        /// Creates a mapping between a database column and a field from the data object.
+        /// Example: <code>insert.Map("TypeName", o => { return o.IsCompany ? "Company" : "Person"; });</code>
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <param name="mappingFunction"></param>
+        /// <returns></returns>
         public InsertCommand<T> Map(string columnName, Func<T, object> mappingFunction)
         {
             _FieldMappings[columnName] = mappingFunction;
-            
+
             return this;
+        }
+
+        /// <summary>
+        /// Removes the field mapping for the given column.
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <returns></returns>
+        public bool RemoveMapping(string columnName)
+        {
+            return _FieldMappings.Remove(columnName);
+        }
+
+        /// <summary>
+        /// Creates the column-to-field or column-to-property mappings dynamically by using reflection and the attributes.
+        /// Give a list with names of fields or properties which should be ignored or use RemoveMapping(string columnName) to remove unneeded columns.
+        /// </summary>
+        /// <param name="ignoredFieldsOrProperties">A list with names of fields or properties which should be ignored.</param>
+        public void CreateDynamicMappings(IEnumerable<string> ignoredFieldsOrProperties = null)
+        {
+            foreach (var fieldDefinition in Entity.FieldDefinitions)
+            {
+                if (ignoredFieldsOrProperties == null
+                    || ignoredFieldsOrProperties.Contains(fieldDefinition.MemberName) == false)
+                {
+                    Func<T, object> func = null;
+
+                    if (fieldDefinition.IsProperty)
+                    {
+                        func = delegate(T o)
+                        {
+                            return ((PropertyInfo)fieldDefinition.MemberInfo).GetValue(o, null);
+                        };
+                    }
+                    else
+                    {
+                        func = delegate(T o)
+                        {
+                            return ((FieldInfo)fieldDefinition.MemberInfo).GetValue(o);
+                        };
+                    }
+
+                    _FieldMappings.Add(fieldDefinition.DbColumnName, func);
+                }
+            }
         }
 
         public int Execute(IEnumerable<T> listOfItems)
@@ -75,23 +113,7 @@ namespace Workbooster.ObjectDbMapper.Commands
                 Connection.Open();
             }
 
-            if (EnableDynamicMapping)
-            {
-                throw new NotImplementedException("Dynamic mapping hasn't been implemented yet");
-            }
-            else
-            {
-                return ExecuteNonDynamic(listOfItems);
-            }
-        }
-
-        #endregion
-
-        #region INTERNAL METHODS
-
-        private int ExecuteNonDynamic(IEnumerable<T> listOfItems)
-        {
-            if(_FieldMappings.Count == 0)
+            if (_FieldMappings.Count == 0)
                 throw new Exception("No field mappings are specified.");
 
             int numberOfRowsAffected = 0;
@@ -120,6 +142,10 @@ namespace Workbooster.ObjectDbMapper.Commands
 
             return numberOfRowsAffected;
         }
+
+        #endregion
+
+        #region INTERNAL METHODS
 
         #endregion
     }
