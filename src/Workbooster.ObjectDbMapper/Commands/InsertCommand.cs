@@ -101,7 +101,7 @@ namespace Workbooster.ObjectDbMapper.Commands
                         };
                     }
 
-                    _FieldMappings.Add(fieldDefinition.DbColumnName, func);
+                    _FieldMappings[fieldDefinition.DbColumnName] = func;
                 }
             }
         }
