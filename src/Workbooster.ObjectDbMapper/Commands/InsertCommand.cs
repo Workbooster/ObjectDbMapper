@@ -15,9 +15,9 @@ namespace Workbooster.ObjectDbMapper.Commands
 
         /// <summary>
         /// Key = ColumnName
-        /// Value = Mapping for the return value
+        /// Value = Mapping for the insert value
         /// </summary>
-        private Dictionary<string, Func<T, object>> _FieldMappings = new Dictionary<string, Func<T, object>>();
+        private Dictionary<string, Func<T, object>> _ColumnMappings = new Dictionary<string, Func<T, object>>();
 
         #endregion
 
@@ -49,7 +49,7 @@ namespace Workbooster.ObjectDbMapper.Commands
         }
 
         /// <summary>
-        /// Creates a mapping between a database column and a field from the data object.
+        /// Creates or overwrites a mapping between a database column and a field from the data object.
         /// Example: <code>insert.Map("TypeName", o => { return o.IsCompany ? "Company" : "Person"; });</code>
         /// </summary>
         /// <param name="columnName"></param>
@@ -57,7 +57,7 @@ namespace Workbooster.ObjectDbMapper.Commands
         /// <returns></returns>
         public InsertCommand<T> Map(string columnName, Func<T, object> mappingFunction)
         {
-            _FieldMappings[columnName] = mappingFunction;
+            _ColumnMappings[columnName] = mappingFunction;
 
             return this;
         }
@@ -69,7 +69,7 @@ namespace Workbooster.ObjectDbMapper.Commands
         /// <returns></returns>
         public bool RemoveMapping(string columnName)
         {
-            return _FieldMappings.Remove(columnName);
+            return _ColumnMappings.Remove(columnName);
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace Workbooster.ObjectDbMapper.Commands
                         };
                     }
 
-                    _FieldMappings[fieldDefinition.DbColumnName] = func;
+                    _ColumnMappings[fieldDefinition.DbColumnName] = func;
                 }
             }
         }
@@ -113,14 +113,14 @@ namespace Workbooster.ObjectDbMapper.Commands
                 Connection.Open();
             }
 
-            if (_FieldMappings.Count == 0)
+            if (_ColumnMappings.Count == 0)
                 throw new Exception("No field mappings are specified.");
 
             int numberOfRowsAffected = 0;
 
             // prepare the SQL INSERT statement
-            string columnNames = String.Join(",", _FieldMappings.Keys.ToArray());
-            string parameterNames = _FieldMappings.Keys.Aggregate("", (acc, s) => acc += ",@" + s).Remove(0, 1);
+            string columnNames = String.Join(",", _ColumnMappings.Keys.ToArray());
+            string parameterNames = _ColumnMappings.Keys.Aggregate("", (acc, s) => acc += ",@" + s).Remove(0, 1);
             string insertStatement = String.Format("INSERT INTO [{0}] ({1}) VALUES({2})", Entity.DbTableName, columnNames, parameterNames);
 
             foreach (var item in listOfItems)
@@ -128,7 +128,7 @@ namespace Workbooster.ObjectDbMapper.Commands
                 DbCommand cmd = Connection.CreateCommand();
                 cmd.CommandText = insertStatement;
 
-                foreach (var mapping in _FieldMappings)
+                foreach (var mapping in _ColumnMappings)
                 {
                     DbParameter param = cmd.CreateParameter();
                     param.ParameterName = mapping.Key;
