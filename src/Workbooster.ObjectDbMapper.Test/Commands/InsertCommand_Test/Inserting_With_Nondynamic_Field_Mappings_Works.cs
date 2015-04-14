@@ -50,7 +50,7 @@ namespace Workbooster.ObjectDbMapper.Test.Commands.InsertCommand_Test
                     new Person() { Id = 103, Name = "InsertTest-3", IsMarried= false, DateOfBirth = new DateTime(1953, 8,15) },
                 };
 
-                InsertCommand<Person> cmd = new InsertCommand<Person>(_Connection, "People", false);
+                InsertCommand<Person> cmd = new InsertCommand<Person>(_Connection, "People");
 
                 Exception ex = Assert.Throws<Exception>(delegate { cmd.Execute(people); });
                 Assert.AreEqual("No field mappings are specified.", ex.Message);
@@ -68,7 +68,7 @@ namespace Workbooster.ObjectDbMapper.Test.Commands.InsertCommand_Test
                     new Person() { Id = 103, Name = "InsertTest-3", IsMarried= false, DateOfBirth = new DateTime(1953, 8,15) },
                 };
 
-                InsertCommand<Person> cmd = new InsertCommand<Person>(_Connection, "People", false);
+                InsertCommand<Person> cmd = new InsertCommand<Person>(_Connection, "People");
                 cmd.Map("Name", p => p.Name);
                 cmd.Map("IsMarried", p => p.IsMarried);
                 cmd.Map("DateOfBirth", p => p.DateOfBirth);
@@ -99,7 +99,7 @@ OR (Name = 'InsertTest-3' AND IsMarried = 0)";
                     people.Add(new Person() { Id = i + 100, Name = "InsertTest-" + i, IsMarried = false, DateOfBirth = new DateTime(1985, 2, 17) });
                 }
 
-                InsertCommand<Person> cmd = new InsertCommand<Person>(_Connection, "People", false);
+                InsertCommand<Person> cmd = new InsertCommand<Person>(_Connection, "People");
                 cmd.Map("Name", p => p.Name);
                 cmd.Map("IsMarried", p => p.IsMarried);
                 cmd.Map("DateOfBirth", p => p.DateOfBirth);
@@ -132,7 +132,7 @@ WHERE Name LIKE 'InsertTest%'
                     new Person() { Id = 104, Name = "InsertTest-4", IsMarried= false, DateOfBirth = new DateTime(1962, 4,2) },
                 };
 
-                InsertCommand<Person> cmd = new InsertCommand<Person>(_Connection, "People", false);
+                InsertCommand<Person> cmd = new InsertCommand<Person>(_Connection, "People");
                 cmd.Map("Name", p => p.Name);
                 cmd.Map("IsMarried", p => p.IsMarried);
                 cmd.Map("DateOfBirth", p => p.DateOfBirth);
