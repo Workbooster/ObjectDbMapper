@@ -53,10 +53,21 @@ namespace Workbooster.ObjectDbMapper.Commands
         /// </summary>
         /// <param name="columnName"></param>
         /// <param name="mappingFunction"></param>
-        /// <returns></returns>
         public void Map(string columnName, Func<T, object> mappingFunction)
         {
             _ColumnMappings[columnName] = mappingFunction;
+        }
+
+        /// <summary>
+        /// Creates or overwrites multiple mappings between a database columns and fields from the data object.
+        /// </summary>
+        /// <param name="listOfMappings"></param>
+        public void Map(Dictionary<string, Func<T, object>> listOfMappings)
+        {
+            foreach (var mapping in listOfMappings)
+            {
+                Map(mapping.Key, mapping.Value);
+            }
         }
 
         /// <summary>
