@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
+using Workbooster.ObjectDbMapper.Commands;
 
 namespace Workbooster.ObjectDbMapper
 {
@@ -15,6 +16,31 @@ namespace Workbooster.ObjectDbMapper
             if (parameters != null) query.Parameters.AddRange(parameters);
 
             return query;
+        }
+
+        public static InsertCommand<T> NewInsert<T>(this DbConnection connection, string tableName = null)
+        {
+            if (tableName == null)
+            {
+                return new InsertCommand<T>(connection);
+            }
+            else
+            {
+
+                return new InsertCommand<T>(connection, tableName);
+            }
+        }
+
+        public static UpdateCommand<T> NewUpdate<T>(this DbConnection connection, string tableName = null)
+        {
+            if (tableName == null)
+            {
+                return new UpdateCommand<T>(connection);
+            }
+            else
+            {
+                return new UpdateCommand<T>(connection, tableName);
+            }
         }
     }
 }
