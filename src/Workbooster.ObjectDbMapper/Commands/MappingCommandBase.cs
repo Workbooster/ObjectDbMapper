@@ -51,23 +51,27 @@ namespace Workbooster.ObjectDbMapper.Commands
         /// Creates or overwrites a mapping between a database column and a field from the data object.
         /// Example: <code>cmd.Map("TypeName", o => { return o.IsCompany ? "Company" : "Person"; });</code>
         /// </summary>
-        /// <param name="columnName"></param>
-        /// <param name="mappingFunction"></param>
-        public void Map(string columnName, Func<T, object> mappingFunction)
+        /// <param name="columnName">Database column name.</param>
+        /// <param name="mappingFunction">A function that returns the value of the column.</param>
+        public MappingCommandBase<T> Map(string columnName, Func<T, object> mappingFunction)
         {
             _ColumnMappings[columnName] = mappingFunction;
+
+            return this;
         }
 
         /// <summary>
         /// Creates or overwrites multiple mappings between a database columns and fields from the data object.
         /// </summary>
-        /// <param name="listOfMappings"></param>
-        public void Map(Dictionary<string, Func<T, object>> listOfMappings)
+        /// <param name="listOfMappings">Key = database column name / Value = a function that returns the value of the column.</param>
+        public MappingCommandBase<T> Map(Dictionary<string, Func<T, object>> listOfMappings)
         {
             foreach (var mapping in listOfMappings)
             {
                 Map(mapping.Key, mapping.Value);
             }
+
+            return this;
         }
 
         /// <summary>

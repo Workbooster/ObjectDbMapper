@@ -32,15 +32,59 @@ namespace Workbooster.ObjectDbMapper.Commands
         public UpdateCommand(DbConnection connection, string tableName) : base(connection, tableName) { }
 
         /// <summary>
+        /// Creates a new instance of an UpdateCommand.
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        public UpdateCommand<T> New(DbConnection connection, string tableName = null)
+        {
+            if (tableName != null)
+            {
+                return new UpdateCommand<T>(connection, tableName);
+            }
+            else
+            {
+                return new UpdateCommand<T>(connection);
+            }
+        }
+
+        /// <summary>
+        /// Creates or overwrites a mapping between a database column and a field from the data object.
+        /// Example: <code>cmd.Map("TypeName", o => { return o.IsCompany ? "Company" : "Person"; });</code>
+        /// </summary>
+        /// <param name="columnName">Database column name.</param>
+        /// <param name="mappingFunction">A function that returns the value of the column.</param>
+        public new UpdateCommand<T> Map(string columnName, Func<T, object> mappingFunction)
+        {
+            base.Map(columnName, mappingFunction);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Creates or overwrites multiple mappings between a database columns and fields from the data object.
+        /// </summary>
+        /// <param name="listOfMappings">Key = database column name / Value = a function that returns the value of the column.</param>
+        public new UpdateCommand<T> Map(Dictionary<string, Func<T, object>> listOfMappings)
+        {
+            base.Map(listOfMappings);
+
+            return this;
+        }
+
+        /// <summary>
         /// Creates or overwrites a conditional mapping between a database column and a field from the data object.
         /// This is used to build the WHERE command.
         /// Example: <code>cmd.MapKey("Id", o => { return o.Id });</code> leads to <code>WHERE Id = @Value</code>
         /// </summary>
         /// <param name="columnName"></param>
         /// <param name="mappingFunction"></param>
-        public void MapKey(string columnName, Func<T, object> mappingFunction)
+        public UpdateCommand<T> MapKey(string columnName, Func<T, object> mappingFunction)
         {
             _KeyMappings[columnName] = mappingFunction;
+
+            return this;
         }
 
         public int Execute(T item)
