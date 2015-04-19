@@ -74,7 +74,7 @@ namespace Workbooster.ObjectDbMapper.Commands
             // prepare the SQL INSERT statement
             string columnNames = String.Join(",", _ColumnMappings.Keys.ToArray());
             string parameterNames = _ColumnMappings.Keys.Aggregate("", (acc, s) => acc += ",@" + s).Remove(0, 1);
-            string insertStatement = String.Format("INSERT INTO [{0}] ({1}) VALUES({2})", Entity.DbTableName, columnNames, parameterNames);
+            string insertStatement = String.Format("INSERT INTO {0} ({1}) VALUES({2})", Connection.EscapeObjectName(Entity.DbTableName), columnNames, parameterNames);
 
             foreach (var item in listOfItems)
             {

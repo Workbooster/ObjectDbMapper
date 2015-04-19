@@ -40,7 +40,8 @@ namespace Workbooster.ObjectDbMapper.Filters
 
         public string GetFilterText(IFilter filter)
         {
-            if (filter == null) throw new ArgumentNullException("filter");
+            if (filter == null)
+                throw new ArgumentNullException("filter");
 
             if (filter is FilterGroup)
             {
@@ -97,21 +98,23 @@ namespace Workbooster.ObjectDbMapper.Filters
                 if (field.MemberType == typeof(string)
                     && filter.Operator == FilterComparisonOperatorEnum.ExactlyEqual)
                 {
-                    text = String.Format(" [{0}] = @{1} COLLATE sql_latin1_general_cp1_cs_as",
-                        filter.FieldName,
-                        param.ParameterName);
+                    text = String.Format(" {0} = @{1} {2}",
+                        Connection.EscapeObjectName(filter.FieldName),
+                        param.ParameterName,
+                        GetCaseSensivityCollation());
                 }
                 else if (field.MemberType == typeof(string)
-                  && filter.Operator == FilterComparisonOperatorEnum.ExactlyEqual)
+                  && filter.Operator == FilterComparisonOperatorEnum.ExactlyNotEqual)
                 {
-                    text = String.Format(" [{0}] <> @{1} COLLATE sql_latin1_general_cp1_cs_as",
-                        filter.FieldName,
-                        param.ParameterName);
+                    text = String.Format(" {0} <> @{1} {2}",
+                        Connection.EscapeObjectName(filter.FieldName),
+                        param.ParameterName,
+                        GetCaseSensivityCollation());
                 }
                 else
                 {
-                    text = String.Format(" [{0}] {1} @{2}",
-                        filter.FieldName,
+                    text = String.Format(" {0} {1} @{2}",
+                        Connection.EscapeObjectName(filter.FieldName),
                         FilterUtilities.GetSqlComparisonOperator(filter.Operator),
                         param.ParameterName);
                 }
@@ -121,6 +124,19 @@ namespace Workbooster.ObjectDbMapper.Filters
             else
             {
                 throw new Exception(String.Format("Unknown field: '{0}'", filter.FieldName));
+            }
+        }
+
+        private string GetCaseSensivityCollation()
+        {
+            switch (Connection.GetDatabaseType())
+            {
+                case DatabaseEngineEnum.MSSQL:
+                    return "COLLATE sql_latin1_general_cp1_cs_as";
+                case DatabaseEngineEnum.MySQL:
+                    return "COLLATE latin1_general_cs";
+                default:
+                    return "";
             }
         }
 
