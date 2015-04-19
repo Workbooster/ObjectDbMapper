@@ -110,7 +110,7 @@ namespace Workbooster.ObjectDbMapper.Commands
 
             // prepare the SQL UPDATE statement
             string columnMappings = GetColumnMappings();
-            string updateCommand = String.Format("UPDATE [{0}] SET {1}", Entity.DbTableName, columnMappings);
+            string updateCommand = String.Format("UPDATE {0} SET {1}", Connection.EscapeObjectName(Entity.DbTableName), columnMappings);
 
             foreach (var item in listOfItems)
             {
