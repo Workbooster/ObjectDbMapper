@@ -142,17 +142,25 @@ namespace Workbooster.ObjectDbMapper
         {
             Dictionary<int, FieldDefinition> dictOfFoundPropertiesAndFields = GetAvailablePropertiesAndFields(reader);
 
-            while (reader.Read())
+            try
             {
-                T item = new T();
-
-                foreach (var columnInfo in dictOfFoundPropertiesAndFields)
+                while (reader.Read())
                 {
-                    object value = ConvertValue(reader, columnInfo.Key, columnInfo.Value);
-                    columnInfo.Value.SetValue<T>(item, value);
-                }
+                    T item = new T();
 
-                yield return item;
+                    foreach (var columnInfo in dictOfFoundPropertiesAndFields)
+                    {
+                        object value = ConvertValue(reader, columnInfo.Key, columnInfo.Value);
+                        columnInfo.Value.SetValue<T>(item, value);
+                    }
+
+                    yield return item;
+                }
+            }
+            finally
+            {
+                if (reader != null && reader.IsClosed == false)
+                    reader.Close();
             }
         }
 

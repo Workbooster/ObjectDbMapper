@@ -66,6 +66,7 @@
     <Compile Include="Commands\InsertCommand_Test\Inserting_With_Nondynamic_Field_Mappings_Works.cs" />
     <Compile Include="Commands\UpdateCommand_Test\Updating_With_Dynamic_Field_Mappings_Works.cs" />
     <Compile Include="Commands\UpdateCommand_Test\Updating_With_Nondynamic_Field_Mappings_Works.cs" />
+    <Compile Include="Query_Test\Execute_Multiple_Times_Works.cs" />
     <Compile Include="Query_Test\Filters_Works.cs" />
     <Compile Include="Query_Test\Reading_To_Fields_With_Column_Attributes_Works.cs" />
     <Compile Include="Query_Test\Reading_To_Fields_Works.cs" />
