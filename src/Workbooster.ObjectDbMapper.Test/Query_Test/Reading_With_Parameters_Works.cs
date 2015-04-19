@@ -31,8 +31,13 @@ namespace Workbooster.ObjectDbMapper.Query_Test
         {
             using (_Connection)
             {
+                DbCommand cmd = _Connection.CreateCommand();
+                DbParameter param = cmd.CreateParameter();
+                param.ParameterName = "@id";
+                param.Value = 5;
+                DbParameter[] parameters = new DbParameter[] { param };
+
                 string sql = @"SELECT * FROM people WHERE id = @id";
-                DbParameter[] parameters = new DbParameter[] { new SqlParameter("@id", 5) };
                 IList<Person> people = _Connection.Select<Person>(sql, parameters).ToList();
 
                 Assert.AreEqual(5, people[0].Id);
@@ -45,8 +50,13 @@ namespace Workbooster.ObjectDbMapper.Query_Test
         {
             using (_Connection)
             {
+                DbCommand cmd = _Connection.CreateCommand();
+                DbParameter param = cmd.CreateParameter();
+                param.ParameterName = "@name";
+                param.Value = "Melanie";
+                DbParameter[] parameters = new DbParameter[] { param };
+
                 string sql = @"SELECT * FROM people WHERE name = @name";
-                DbParameter[] parameters = new DbParameter[] { new SqlParameter("@name", "Melanie") };
                 IList<Person> people = _Connection.Select<Person>(sql, parameters).ToList();
 
                 Assert.AreEqual(5, people[0].Id);
