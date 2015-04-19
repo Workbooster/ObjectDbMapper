@@ -14,10 +14,10 @@ namespace Workbooster.ObjectDbMapper.Test._TestData
     public static class TestData
     {
         // Available Engines
-        public enum DatabaseEngine { MSSQL, MySQL }
+        public enum DatabaseEngineEnum { MSSQL, MySQL }
 
         // Engine for test
-        public static readonly DatabaseEngine DATABASE_ENGINE = DatabaseEngine.MySQL;
+        public static readonly DatabaseEngineEnum DATABASE_ENGINE = DatabaseEngineEnum.MySQL;
 
 
         /* Microsoft T-SQL */
@@ -33,20 +33,24 @@ namespace Workbooster.ObjectDbMapper.Test._TestData
         /// <summary>
         /// Prepares the testdata and creates and opens a connection.
         /// </summary>
-        public static DbConnection SetupConnection()
+        /// <param name="engine">if null the DATABASE_ENGINE is used</param>
+        /// <returns></returns>
+        public static DbConnection SetupConnection(TestData.DatabaseEngineEnum? engine = null)
         {
+            TestData.DatabaseEngineEnum usedEngine = engine == null ? DATABASE_ENGINE : (TestData.DatabaseEngineEnum)engine;
+
             string setuptScriptFilePath = "";
             string sqlSetupScript = "";
             string currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             DbConnection connection = null;
 
-            switch (DATABASE_ENGINE)
+            switch (usedEngine)
             {
-                case DatabaseEngine.MSSQL:
+                case DatabaseEngineEnum.MSSQL:
                     connection = new SqlConnection(MSSQL_CONNECTION_STRING);
                     setuptScriptFilePath = Path.Combine(currentDirectory, MSSQL_SETUP_SCRIPT);
                     break;
-                case DatabaseEngine.MySQL:
+                case DatabaseEngineEnum.MySQL:
                     connection = new MySqlConnection(MYSQL_CONNECTION_STRING);
                     setuptScriptFilePath = Path.Combine(currentDirectory, MYSQL_SETUP_SCRIPT);
                     break;
