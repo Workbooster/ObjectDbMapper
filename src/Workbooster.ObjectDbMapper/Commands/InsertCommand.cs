@@ -78,6 +78,12 @@ namespace Workbooster.ObjectDbMapper.Commands
             return this;
         }
 
+        public T Execute(T item)
+        {
+            Execute(new T[] { item });
+            return item;
+        }
+
         public int Execute(IEnumerable<T> listOfItems)
         {
             if (Connection.State != System.Data.ConnectionState.Open)

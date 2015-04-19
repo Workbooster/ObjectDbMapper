@@ -87,9 +87,10 @@ namespace Workbooster.ObjectDbMapper.Commands
             return this;
         }
 
-        public int Execute(T item)
+        public T Execute(T item)
         {
-            return Execute(new T[] { item });
+            Execute(new T[] { item });
+            return item;
         }
 
         public int Execute(IEnumerable<T> listOfItems)
