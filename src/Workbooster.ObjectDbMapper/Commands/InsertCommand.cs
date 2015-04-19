@@ -11,6 +11,18 @@ namespace Workbooster.ObjectDbMapper.Commands
 {
     public class InsertCommand<T> : MappingCommandBase<T>
     {
+        #region MEMBERS
+
+        private List<Action<T, object>> _IdentityMappings = new List<Action<T, object>>();
+
+        #endregion
+
+        #region PROPERTIES
+
+        public object LastIdentity { get; private set; }
+
+        #endregion
+
         #region PUBLIC METHODS
 
         public InsertCommand(DbConnection connection) : base(connection) { }
@@ -33,6 +45,13 @@ namespace Workbooster.ObjectDbMapper.Commands
             {
                 return new InsertCommand<T>(connection);
             }
+        }
+
+        public InsertCommand<T> MapIdentity(Action<T, object> mappingFunction)
+        {
+            _IdentityMappings.Add(mappingFunction);
+
+            return this;
         }
 
         /// <summary>
@@ -74,7 +93,12 @@ namespace Workbooster.ObjectDbMapper.Commands
             // prepare the SQL INSERT statement
             string columnNames = String.Join(",", _ColumnMappings.Keys.ToArray());
             string parameterNames = _ColumnMappings.Keys.Aggregate("", (acc, s) => acc += ",@" + s).Remove(0, 1);
-            string insertStatement = String.Format("INSERT INTO {0} ({1}) VALUES({2})", Connection.EscapeObjectName(Entity.DbTableName), columnNames, parameterNames);
+            string identitySelect = GetIdentitySelect();
+            string insertStatement = String.Format("INSERT INTO {0} ({1}) VALUES({2}); {3}", 
+                Connection.EscapeObjectName(Entity.DbTableName), 
+                columnNames, 
+                parameterNames,
+                identitySelect);
 
             foreach (var item in listOfItems)
             {
@@ -90,10 +114,36 @@ namespace Workbooster.ObjectDbMapper.Commands
                     cmd.Parameters.Add(param);
                 }
 
-                numberOfRowsAffected += cmd.ExecuteNonQuery();
+                // get the last inserted identity
+                LastIdentity = cmd.ExecuteScalar();
+
+                // handle the identity mappings
+                foreach (var mapping in _IdentityMappings)
+                {
+                    mapping(item, LastIdentity);
+                }
+
+                numberOfRowsAffected++;
             }
 
             return numberOfRowsAffected;
+        }
+
+        #endregion
+
+        #region INTERNAL METHODS
+
+        private string GetIdentitySelect()
+        {
+            switch (Connection.GetDatabaseType())
+            {
+                case DatabaseEngineEnum.MSSQL:
+                    return "SELECT @@IDENTITY;";
+                case DatabaseEngineEnum.MySQL:
+                    return "SELECT LAST_INSERT_ID();";
+                default:
+                    return "";
+            }
         }
 
         #endregion
