@@ -37,7 +37,7 @@ namespace Workbooster.ObjectDbMapper.Commands
         /// <param name="connection"></param>
         /// <param name="tableName"></param>
         /// <returns></returns>
-        public UpdateCommand<T> New(DbConnection connection, string tableName = null)
+        public static UpdateCommand<T> New(DbConnection connection, string tableName = null)
         {
             if (tableName != null)
             {
