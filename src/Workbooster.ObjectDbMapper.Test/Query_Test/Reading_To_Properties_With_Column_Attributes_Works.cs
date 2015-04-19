@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using System.Data.Common;
 
 namespace Workbooster.ObjectDbMapper.Query_Test
 {
@@ -33,19 +34,12 @@ namespace Workbooster.ObjectDbMapper.Query_Test
             public string Unknown { get; set; }
         }
 
-        private string _TempDbConnectionString;
-        private SqlConnection _Connection;
-
-        [TestFixtureSetUp]
-        public void Initialize()
-        {
-            _TempDbConnectionString = TestData.SetupTempTestDb();
-        }
+        private DbConnection _Connection;
 
         [SetUp]
         public void Setup()
         {
-            _Connection = new SqlConnection(_TempDbConnectionString);
+            _Connection = TestData.SetupConnection();
         }
 
         [Test]

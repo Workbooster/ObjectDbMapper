@@ -1,7 +1,11 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 
@@ -9,67 +13,55 @@ namespace Workbooster.ObjectDbMapper.Test._TestData
 {
     public static class TestData
     {
-        public static readonly string TEST_DATA_DIRECTORY = @"_TestData\";
-        public static readonly string DATABASE_FILE_NAME = @"data.mdf";
-        public static readonly string CONNECTION_STRING_PATTERN = @"Data Source=(LocalDB)\v11.0; AttachDbFilename={0}; Integrated Security=True;";
+        // Available Engines
+        public enum DatabaseEngine { MSSQL, MySQL }
+
+        // Engine for test
+        public static readonly DatabaseEngine DATABASE_ENGINE = DatabaseEngine.MySQL;
+
+
+        /* Microsoft T-SQL */
+
+        public static readonly string MSSQL_CONNECTION_STRING = @"Data Source=(LocalDB)\v11.0; AttachDbFilename=|DataDirectory|\_TestData\data.mdf; Integrated Security=True;";
+        public static readonly string MSSQL_SETUP_SCRIPT = @"_TestData\mssql_setup.sql";
+
+        /* Oracle MySQL */
+
+        public static readonly string MYSQL_CONNECTION_STRING = @"Server=127.0.0.1;Uid=root;Pwd=;Database=unittests;";
+        public static readonly string MYSQL_SETUP_SCRIPT = @"_TestData\mysql_setup.sql";
 
         /// <summary>
-        /// Creates a backup of the test data. Please call this on test setup.
+        /// Prepares the testdata and creates and opens a connection.
         /// </summary>
-        public static string SetupTempTestDb()
+        public static DbConnection SetupConnection()
         {
-            string guid = Guid.NewGuid().ToString();
-            string testDataDirectoryPath = Path.Combine(Environment.CurrentDirectory, TestData.TEST_DATA_DIRECTORY);
-            string tempTestDataDirectoryPath = Path.Combine(Environment.CurrentDirectory, @"_TempTestData\" + guid + @"\");
+            string setuptScriptFilePath = "";
+            string sqlSetupScript = "";
+            string currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            DbConnection connection = null;
 
-            if (Directory.Exists(tempTestDataDirectoryPath))
+            switch (DATABASE_ENGINE)
             {
-                Directory.Delete(tempTestDataDirectoryPath, true);
+                case DatabaseEngine.MSSQL:
+                    connection = new SqlConnection(MSSQL_CONNECTION_STRING);
+                    setuptScriptFilePath = Path.Combine(currentDirectory, MSSQL_SETUP_SCRIPT);
+                    break;
+                case DatabaseEngine.MySQL:
+                    connection = new MySqlConnection(MYSQL_CONNECTION_STRING);
+                    setuptScriptFilePath = Path.Combine(currentDirectory, MYSQL_SETUP_SCRIPT);
+                    break;
+                default:
+                    throw new Exception("Unknown Database Engine");
             }
 
-            CopyDirectory(testDataDirectoryPath, tempTestDataDirectoryPath, true);
+            sqlSetupScript = File.ReadAllText(setuptScriptFilePath);
 
-            string tempTestDbFilePath = Path.Combine(tempTestDataDirectoryPath, TestData.DATABASE_FILE_NAME);
+            connection.Open();
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = sqlSetupScript;
+            cmd.ExecuteNonQuery();
 
-            return String.Format(CONNECTION_STRING_PATTERN, tempTestDbFilePath);
-        }
-
-        private static void CopyDirectory(string sourceDirName, string destDirName, bool copySubDirs)
-        {
-            // Get the subdirectories for the specified directory.
-            DirectoryInfo dir = new DirectoryInfo(sourceDirName);
-            DirectoryInfo[] dirs = dir.GetDirectories();
-
-            if (!dir.Exists)
-            {
-                throw new DirectoryNotFoundException(
-                    "Source directory does not exist or could not be found: "
-                    + sourceDirName);
-            }
-
-            // If the destination directory doesn't exist, create it. 
-            if (!Directory.Exists(destDirName))
-            {
-                Directory.CreateDirectory(destDirName);
-            }
-
-            // Get the files in the directory and copy them to the new location.
-            FileInfo[] files = dir.GetFiles();
-            foreach (FileInfo file in files)
-            {
-                string temppath = Path.Combine(destDirName, file.Name);
-                file.CopyTo(temppath, false);
-            }
-
-            // If copying subdirectories, copy them and their contents to new location. 
-            if (copySubDirs)
-            {
-                foreach (DirectoryInfo subdir in dirs)
-                {
-                    string temppath = Path.Combine(destDirName, subdir.Name);
-                    CopyDirectory(subdir.FullName, temppath, copySubDirs);
-                }
-            }
+            return connection;
         }
     }
 }

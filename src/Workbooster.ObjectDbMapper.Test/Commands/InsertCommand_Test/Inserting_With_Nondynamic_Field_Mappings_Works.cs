@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
@@ -22,12 +23,12 @@ namespace Workbooster.ObjectDbMapper.Test.Commands.InsertCommand_Test
             public DateTime DateOfBirth { get; set; }
         }
 
-        private SqlConnection _Connection;
+        private DbConnection _Connection;
 
         [SetUp]
         public void Setup()
         {
-            _Connection = new SqlConnection(TestData.SetupTempTestDb());
+            _Connection = TestData.SetupConnection();
         }
 
         [TearDown]

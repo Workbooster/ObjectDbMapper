@@ -19,19 +19,12 @@ namespace Workbooster.ObjectDbMapper.Test.Query_Test
             public bool IsMarried { get; set; }
         }
 
-        private string _TempDbConnectionString;
-        private SqlConnection _Connection;
-
-        [TestFixtureSetUp]
-        public void Initialize()
-        {
-            _TempDbConnectionString = TestData.SetupTempTestDb();
-        }
+        private DbConnection _Connection;
 
         [SetUp]
         public void Setup()
         {
-            _Connection = new SqlConnection(_TempDbConnectionString);
+            _Connection = TestData.SetupConnection();
         }
 
         [Test]

@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -43,19 +44,12 @@ namespace Workbooster.ObjectDbMapper.Query_Test
             public string UnknownTwo { get; set; }
         }
 
-        private string _TempDbConnectionString;
-        private SqlConnection _Connection;
-
-        [TestFixtureSetUp]
-        public void Initialize()
-        {
-            _TempDbConnectionString = TestData.SetupTempTestDb();
-        }
+        private DbConnection _Connection;
 
         [SetUp]
         public void Setup()
         {
-            _Connection = new SqlConnection(_TempDbConnectionString);
+            _Connection = TestData.SetupConnection();
         }
 
         [Test]
