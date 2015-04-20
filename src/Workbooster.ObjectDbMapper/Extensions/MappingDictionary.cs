@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Workbooster.ObjectDbMapper.Extensions
+namespace Workbooster.ObjectDbMapper
 {
     public class MappingDictionary<T> : Dictionary<string, Func<T, object>>
     {
