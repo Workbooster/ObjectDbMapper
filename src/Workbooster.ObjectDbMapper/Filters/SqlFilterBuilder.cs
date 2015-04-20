@@ -82,8 +82,11 @@ namespace Workbooster.ObjectDbMapper.Filters
 
                 try
                 {
+                    // get the type for the conversion (not nullable)
+                    Type notNullableType = Nullable.GetUnderlyingType(field.MemberType) ?? field.MemberType;
+
                     // convert the value to the type of the member
-                    param.Value = Convert.ChangeType(filter.Value, field.MemberType);
+                    param.Value = Convert.ChangeType(filter.Value, notNullableType);
                 }
                 catch (Exception ex)
                 {
