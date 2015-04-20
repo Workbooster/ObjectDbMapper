@@ -9,9 +9,15 @@ namespace Workbooster.ObjectDbMapper
     {
         public new MappingDictionary<T> Add(string columnName, Func<T, object> mappingFunction)
         {
+            return Map(columnName, mappingFunction);
+        }
+
+        public MappingDictionary<T> Map(string columnName, Func<T, object> mappingFunction)
+        {
             base.Add(columnName, mappingFunction);
 
             return this;
+            
         }
     }
 }
