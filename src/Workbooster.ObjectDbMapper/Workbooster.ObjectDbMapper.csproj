@@ -47,6 +47,7 @@
     <Compile Include="Commands\UpdateCommand.cs" />
     <Compile Include="Extensions\ConnectionExtentions.cs" />
     <Compile Include="Extensions\DatabaseEngineEnum.cs" />
+    <Compile Include="Extensions\MappingDictionary.cs" />
     <Compile Include="Filters\FilterComparison.cs" />
     <Compile Include="Filters\FilterComparisonOperatorEnum.cs" />
     <Compile Include="Filters\FilterGroup.cs" />
