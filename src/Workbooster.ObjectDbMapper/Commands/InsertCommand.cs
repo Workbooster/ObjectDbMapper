@@ -115,7 +115,7 @@ namespace Workbooster.ObjectDbMapper.Commands
                 {
                     DbParameter param = cmd.CreateParameter();
                     param.ParameterName = mapping.Key;
-                    param.Value = mapping.Value(item);
+                    param.Value = mapping.Value(item) ?? DBNull.Value;
 
                     cmd.Parameters.Add(param);
                 }
