@@ -10,6 +10,23 @@ namespace Workbooster.ObjectDbMapper
     public static class ConnectionExcetions
     {
         /// <summary>
+        /// Creates a new SELECT query that returns anonymous Record items.
+        /// <![CDATA[(Use Select<T>(...) to get the result in typed form)]]>
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="sql"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public static Query<Record> Select(this DbConnection connection, string sql, DbParameter[] parameters = null)
+        {
+            var query = new Query<Record>(connection, sql);
+
+            if (parameters != null) query.Parameters.AddRange(parameters);
+
+            return query;
+        }
+
+        /// <summary>
         /// Creates a new SELECT query.
         /// </summary>
         /// <typeparam name="T"></typeparam>

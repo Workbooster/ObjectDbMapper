@@ -140,27 +140,67 @@ namespace Workbooster.ObjectDbMapper
 
         private IEnumerator<T> Read(DbDataReader reader)
         {
-            Dictionary<int, FieldDefinition> dictOfFoundPropertiesAndFields = GetAvailablePropertiesAndFields(reader);
-
-            try
+            if (typeof(T).IsAssignableFrom(typeof(Record)))
             {
-                while (reader.Read())
+                // handle the request for an anonymous record data type
+
+                try
                 {
-                    T item = new T();
-
-                    foreach (var columnInfo in dictOfFoundPropertiesAndFields)
+                    while (reader.Read())
                     {
-                        object value = ConvertValue(reader, columnInfo.Key, columnInfo.Value);
-                        columnInfo.Value.SetValue<T>(item, value);
-                    }
+                        T item = new T();
+                        Record record = item as Record;
 
-                    yield return item;
+                        for (int i = 0; i < reader.FieldCount; i++)
+                        {
+                            string name = reader.GetName(i);
+                            object value = reader.GetValue(i);
+
+                            if (value == DBNull.Value)
+                            {
+                                record.Add(name, null);
+                            }
+                            else
+                            {
+                                record.Add(name, value);
+                            }
+                        }
+
+                        yield return item;
+                    }
+                }
+                finally
+                {
+                    if (reader != null && reader.IsClosed == false)
+                        reader.Close();
                 }
             }
-            finally
+            else
             {
-                if (reader != null && reader.IsClosed == false)
-                    reader.Close();
+                // handle the request for a data class
+
+                Dictionary<int, FieldDefinition> dictOfFoundPropertiesAndFields = GetAvailablePropertiesAndFields(reader);
+
+                try
+                {
+                    while (reader.Read())
+                    {
+                        T item = new T();
+
+                        foreach (var columnInfo in dictOfFoundPropertiesAndFields)
+                        {
+                            object value = ConvertValue(reader, columnInfo.Key, columnInfo.Value);
+                            columnInfo.Value.SetValue<T>(item, value);
+                        }
+
+                        yield return item;
+                    }
+                }
+                finally
+                {
+                    if (reader != null && reader.IsClosed == false)
+                        reader.Close();
+                }
             }
         }
 

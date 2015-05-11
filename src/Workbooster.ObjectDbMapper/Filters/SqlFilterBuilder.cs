@@ -61,10 +61,10 @@ namespace Workbooster.ObjectDbMapper.Filters
 
         private string GetFilterText(FilterComparison filter)
         {
-            FieldDefinition field = Entity.FieldDefinitions.Where(f => f.DbColumnName == filter.FieldName).FirstOrDefault();
-
-            if (field != null)
+            if (Entity.EntityType.IsAssignableFrom(typeof(Record)))
             {
+                // handle the request for an anonymous record data type
+
                 string text = "";
 
                 // create a SQL parameter
@@ -73,32 +73,12 @@ namespace Workbooster.ObjectDbMapper.Filters
 
                 // generate a unique parameter name from a GUID
                 param.ParameterName = Guid.NewGuid().ToString().Replace('-', '_');
-
-                // check whether a different DbType is set
-                if (field.DbType != null)
-                {
-                    param.DbType = (DbType)field.DbType;
-                }
-
-                try
-                {
-                    // get the type for the conversion (not nullable)
-                    Type notNullableType = Nullable.GetUnderlyingType(field.MemberType) ?? field.MemberType;
-
-                    // convert the value to the type of the member
-                    param.Value = Convert.ChangeType(filter.Value, notNullableType);
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception(String.Format(
-                        "Error while converting the value '{0}' into '{1}' while creating a filter for the field '{2}'.",
-                        filter.Value, field.MemberType.Name, filter.FieldName), ex);
-                }
+                param.Value = filter.Value == null ? DBNull.Value : filter.Value;
 
                 // add the parameter to the local collection
                 Parameters.Add(param);
 
-                if (field.MemberType == typeof(string)
+                if (filter.Value is string
                     && filter.Operator == FilterComparisonOperatorEnum.ExactlyEqual)
                 {
                     text = String.Format(" {0} = @{1} {2}",
@@ -106,7 +86,7 @@ namespace Workbooster.ObjectDbMapper.Filters
                         param.ParameterName,
                         GetCaseSensivityCollation());
                 }
-                else if (field.MemberType == typeof(string)
+                else if (filter.Value is string
                   && filter.Operator == FilterComparisonOperatorEnum.ExactlyNotEqual)
                 {
                     text = String.Format(" {0} <> @{1} {2}",
@@ -126,7 +106,75 @@ namespace Workbooster.ObjectDbMapper.Filters
             }
             else
             {
-                throw new Exception(String.Format("Unknown field: '{0}'", filter.FieldName));
+                // handle the request for a data class
+
+                FieldDefinition field = Entity.FieldDefinitions.Where(f => f.DbColumnName == filter.FieldName).FirstOrDefault();
+
+                if (field != null)
+                {
+                    string text = "";
+
+                    // create a SQL parameter
+
+                    DbParameter param = _FactoryCommand.CreateParameter();
+
+                    // generate a unique parameter name from a GUID
+                    param.ParameterName = Guid.NewGuid().ToString().Replace('-', '_');
+
+                    // check whether a different DbType is set
+                    if (field.DbType != null)
+                    {
+                        param.DbType = (DbType)field.DbType;
+                    }
+
+                    try
+                    {
+                        // get the type for the conversion (not nullable)
+                        Type notNullableType = Nullable.GetUnderlyingType(field.MemberType) ?? field.MemberType;
+
+                        // convert the value to the type of the member
+                        param.Value = Convert.ChangeType(filter.Value, notNullableType);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(String.Format(
+                            "Error while converting the value '{0}' into '{1}' while creating a filter for the field '{2}'.",
+                            filter.Value, field.MemberType.Name, filter.FieldName), ex);
+                    }
+
+                    // add the parameter to the local collection
+                    Parameters.Add(param);
+
+                    if (field.MemberType == typeof(string)
+                        && filter.Operator == FilterComparisonOperatorEnum.ExactlyEqual)
+                    {
+                        text = String.Format(" {0} = @{1} {2}",
+                            Connection.EscapeObjectName(filter.FieldName),
+                            param.ParameterName,
+                            GetCaseSensivityCollation());
+                    }
+                    else if (field.MemberType == typeof(string)
+                      && filter.Operator == FilterComparisonOperatorEnum.ExactlyNotEqual)
+                    {
+                        text = String.Format(" {0} <> @{1} {2}",
+                            Connection.EscapeObjectName(filter.FieldName),
+                            param.ParameterName,
+                            GetCaseSensivityCollation());
+                    }
+                    else
+                    {
+                        text = String.Format(" {0} {1} @{2}",
+                            Connection.EscapeObjectName(filter.FieldName),
+                            FilterUtilities.GetSqlComparisonOperator(filter.Operator),
+                            param.ParameterName);
+                    }
+
+                    return text;
+                }
+                else
+                {
+                    throw new Exception(String.Format("Unknown field: '{0}'", filter.FieldName));
+                }
             }
         }
 
