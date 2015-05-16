@@ -186,8 +186,9 @@ namespace Workbooster.ObjectDbMapper.Commands
             if (Filter != null)
             {
                 SqlFilterBuilder filterBuilder = new SqlFilterBuilder(Connection, Entity);
+                string filterText = filterBuilder.GetFilterText(Filter);
                 dbParameters.AddRange(filterBuilder.Parameters);
-                return filterBuilder.GetFilterText(Filter);
+                return filterText;
             }
 
             return "";
