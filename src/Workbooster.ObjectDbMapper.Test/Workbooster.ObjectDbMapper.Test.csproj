@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\DeleteCommand_Test\Deleting_With_Filters_Works.cs" />
     <Compile Include="Commands\InsertCommand_Test\Inserting_With_Identity_Mapping_Works.cs" />
     <Compile Include="Commands\InsertCommand_Test\Inserting_With_Dynamic_Field_Mappings_Works.cs" />
     <Compile Include="Commands\InsertCommand_Test\Inserting_With_Nondynamic_Field_Mappings_Works.cs" />

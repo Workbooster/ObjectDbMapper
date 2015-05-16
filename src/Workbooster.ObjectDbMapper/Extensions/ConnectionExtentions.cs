@@ -43,6 +43,33 @@ namespace Workbooster.ObjectDbMapper
             return query;
         }
 
+        public static int Delete<T>(this DbConnection connection, IFilter filterCondition, IEnumerable<T> items = null) where T : new()
+        {
+            var query = new DeleteCommand<T>(connection);
+
+            query.Filter = filterCondition;
+
+            return query.Execute(items);
+        }
+
+        public static int Delete<T>(this DbConnection connection, string tableName, IFilter filterCondition, IEnumerable<T> items = null) where T : new()
+        {
+            var query = new DeleteCommand<T>(connection, tableName);
+
+            query.Filter = filterCondition;
+
+            return query.Execute(items);
+        }
+
+        public static int Delete(this DbConnection connection, string tableName, IFilter filterCondition)
+        {
+            var query = new DeleteCommand<Record>(connection, tableName);
+
+            query.Filter = filterCondition;
+
+            return query.Execute();
+        }
+
         /// <summary>
         /// Creates a new INSERT command without executing it.
         /// </summary>
@@ -78,6 +105,25 @@ namespace Workbooster.ObjectDbMapper
             else
             {
                 return new UpdateCommand<T>(connection, tableName);
+            }
+        }
+
+        /// <summary>
+        /// Creates a new UPDATE command without executing it.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="connection"></param>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        public static DeleteCommand<T> NewDelete<T>(this DbConnection connection, string tableName = null)
+        {
+            if (tableName == null)
+            {
+                return new DeleteCommand<T>(connection);
+            }
+            else
+            {
+                return new DeleteCommand<T>(connection, tableName);
             }
         }
 

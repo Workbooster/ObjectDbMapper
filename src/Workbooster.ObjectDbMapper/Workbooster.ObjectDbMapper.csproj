@@ -42,6 +42,7 @@
     <Compile Include="Attributes\ColumnAttribute.cs" />
     <Compile Include="Attributes\IgnoreAttribute.cs" />
     <Compile Include="Attributes\TableAttribute.cs" />
+    <Compile Include="Commands\DeleteCommand.cs" />
     <Compile Include="Commands\InsertCommand.cs" />
     <Compile Include="Commands\MappingCommandBase.cs" />
     <Compile Include="Commands\UpdateCommand.cs" />
