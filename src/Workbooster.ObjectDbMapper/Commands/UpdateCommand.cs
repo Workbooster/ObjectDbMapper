@@ -100,9 +100,14 @@ namespace Workbooster.ObjectDbMapper.Commands
                 Connection.Open();
             }
 
+            // stopp if no items are given
+            if (listOfItems == null || listOfItems.Count() == 0)
+                return 0;
+
             if (_ColumnMappings.Count == 0)
                 throw new Exception("No field mappings are specified.");
 
+            List<T> listOfItemsOtUpdate;
             int numberOfRowsAffected = 0;
 
             // get the static where conditions from "Filter" property
@@ -113,7 +118,18 @@ namespace Workbooster.ObjectDbMapper.Commands
             string columnMappings = GetColumnMappings();
             string updateCommand = String.Format("UPDATE {0} SET {1}", Connection.EscapeObjectName(Entity.DbTableName), columnMappings);
 
-            foreach (var item in listOfItems)
+            if (_KeyMappings.Count == 0)
+            {
+                // if no key mapping is given there is no need to loop threw all items
+
+                listOfItemsOtUpdate = listOfItems.Take(1).ToList();
+            }
+            else
+            {
+                listOfItemsOtUpdate = listOfItems.ToList();
+            }
+
+            foreach (var item in listOfItemsOtUpdate)
             {
                 DbCommand cmd = Connection.CreateCommand();
 
