@@ -91,5 +91,34 @@ SELECT COUNT(*) FROM People WHERE Name = 'UpdateTest'";
                 Assert.AreEqual(1, check2Cmd.ExecuteScalar());
             }
         }
+
+        [Test]
+        public void Updating_Data_With_Filter_Condition_Works()
+        {
+            using (_Connection)
+            {
+                // get expected value
+                var expectedCmd = _Connection.CreateCommand();
+                expectedCmd.CommandText = @"
+SELECT COUNT(*) FROM People WHERE IsMarried = TRUE";
+
+                int numberOfPeopleBeforeUpdate = Convert.ToInt32(expectedCmd.ExecuteScalar());
+
+                Person person = new Person() { Name = "UpdateTest", IsMarried = true, DateOfBirth = DateTime.Today, };
+
+                UpdateCommand<Person> cmd = new UpdateCommand<Person>(_Connection, "People");
+                cmd.CreateDynamicMappings();
+                cmd.RemoveMapping("Id");
+                cmd.Filter = new FilterComparison("IsMarried", FilterComparisonOperatorEnum.ExactlyEqual, true);
+                cmd.Execute(person);
+
+                // check
+                var checkCmd = _Connection.CreateCommand();
+                checkCmd.CommandText = @"
+SELECT COUNT(*) FROM People WHERE Name = 'UpdateTest'";
+
+                Assert.AreEqual(numberOfPeopleBeforeUpdate, checkCmd.ExecuteScalar());
+            }
+        }
     }
 }
