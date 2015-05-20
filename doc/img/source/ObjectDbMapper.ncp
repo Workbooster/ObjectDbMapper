@@ -1,0 +1,45 @@
+<Project>
+  <Name>ObjectDbMapper</Name>
+  <ProjectItem type="NClass.DiagramEditor.ClassDiagram.Diagram" assembly="NClass.DiagramEditor, Version=2.4.1823.0, Culture=neutral, PublicKeyToken=null">
+    <Name>Example DB Schema</Name>
+    <Language>CSharp</Language>
+    <Entities>
+      <Entity type="Interface">
+        <Name>People</Name>
+        <Access>Public</Access>
+        <Location left="94" top="101" />
+        <Size width="163" height="146" />
+        <Collapsed>False</Collapsed>
+        <Member type="Property">int Id { get; set; }</Member>
+        <Member type="Property">string Name { get; set; }</Member>
+        <Member type="Property">bool IsMarried { get; set; }</Member>
+        <Member type="Property">DateTime DateOfBirth { get; set; }</Member>
+        <Member type="Property">string PlaceOfBirth { get; set; }</Member>
+      </Entity>
+      <Entity type="Interface">
+        <Name>Addresses</Name>
+        <Access>Public</Access>
+        <Location left="346" top="101" />
+        <Size width="170" height="180" />
+        <Collapsed>False</Collapsed>
+        <Member type="Property">int Id { get; set; }</Member>
+        <Member type="Property">int IdPerson { get; set; }</Member>
+        <Member type="Property">string Street { get; set; }</Member>
+        <Member type="Property">string ZipCode { get; set; }</Member>
+        <Member type="Property">string City { get; set; }</Member>
+        <Member type="Property">bool IsPrimary { get; set; }</Member>
+        <Member type="Property">DateTime DateOfCreation { get; set; }</Member>
+      </Entity>
+    </Entities>
+    <Relationships>
+      <Relationship type="Association" first="0" second="1">
+        <StartOrientation>Horizontal</StartOrientation>
+        <EndOrientation>Horizontal</EndOrientation>
+        <Direction>Unidirectional</Direction>
+        <AssociationType>Composition</AssociationType>
+        <StartMultiplicity>1</StartMultiplicity>
+        <EndMultiplicity>*</EndMultiplicity>
+      </Relationship>
+    </Relationships>
+  </ProjectItem>
+</Project>
