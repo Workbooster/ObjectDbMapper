@@ -24,7 +24,8 @@ Now we can use the Select<T>(...) extension method on the DbConnection
 
 ```csharp
 // write a usual SQL-Statement to select the data
-IEnumerable<Person> people = connection.Select<Person>(@"SELECT * FROM people WHERE IsMarried = 1");
+IEnumerable<Person> people = connection
+    .Select<Person>(@"SELECT * FROM people WHERE IsMarried = 1");
 ```
 
 Instead of writing a SQL WHERE clause you can use a filter:
@@ -60,7 +61,7 @@ WHERE adr.IsPrimary = 1";
 
         IEnumerable<PersonAddressData> people = connection.Select<PersonAddressData>(largerSql);
 
-        // do something with the data ...
+        // Do something with the data ...
     }
 }
 ```
@@ -85,21 +86,21 @@ public class Person
 If the column names of the table and the field/property names of the model match we can use CreateDynamicMappings(...) to map columns and fields/properties:
 
 ```csharp
-// prepare a list of people to insert
+// Prepare a list of people to insert
 List<Person> people = new List<Person>() { 
         new Person() { Id = null, Name = "InsertTest-1", IsMarried= false, DateOfBirth = new DateTime(1985, 2,17), },
         new Person() { Id = null, Name = "InsertTest-2", IsMarried= true, DateOfBirth = new DateTime(1972, 11,2), },
         new Person() { Id = null, Name = "InsertTest-3", IsMarried= false, DateOfBirth = new DateTime(1953, 8,15), },
     };
 
-// specifiy a list of fields that not should be mapped dynamically
+// Specify a list of fields that not should be mapped dynamically
 string[] ignoredFieldsForDynamicMapping = new string[] { "Id" };
 
-// create an insert command for the model "Person" and the table "People" with an automatic field mapping
+// Create an insert command for the model "Person" and the table "People" with an automatic field mapping
 InsertCommand<Person> cmd = new InsertCommand<Person>(connection, "People");
 cmd.CreateDynamicMappings(ignoredFieldsForDynamicMapping);
 
-// run the insert command for the given list of people
+// Run the insert command for the given list of people
 cmd.Execute(people);
 ```
 
@@ -123,6 +124,118 @@ cmd.Map("PersonName", i => {
     }
 });
 ```
+
+### UPDATE
+
+The Update Command works quite the same way as an Insert Command but it additionally needs a key or a filter used to identify the records in the database.
+
+The following example shows the easiest way to update records identified by one single identifier:
+
+```csharp
+Person person = new Person() { Id = 2, Name = "UpdateTest", DateOfBirth = DateTime.Today, };
+
+UpdateCommand<Person> cmd = new UpdateCommand<Person>(connection, "People");
+cmd.CreateDynamicMappings();
+cmd.MapKey("Id", p => p.Id); // Maps the column "Id" with the property "Id" from the model
+
+cmd.Execute(person);
+```
+
+Or you can instead use a filter:
+
+```csharp
+// Create a "template person" for all people that match the filter criteria
+Person person = new Person() { Name = "UpdateTest", IsMarried = true, DateOfBirth = DateTime.Today, };
+
+UpdateCommand<Person> cmd = new UpdateCommand<Person>(connection, "People");
+cmd.CreateDynamicMappings();
+cmd.RemoveMapping("Id"); // You can also remove mappings created by the dynamic mapping functionality
+
+// Filter: Only people that are married
+cmd.Filter = new FilterComparison("IsMarried", FilterComparisonOperatorEnum.ExactlyEqual, true);
+
+cmd.Execute(person);
+```
+
+And of course you can specify the field mappings by yourself. In the following example only the column "IsMarried" is updated (it is set to "false" for all people because there is no filter):
+```csharp
+// Create a "template person"
+Person person = new Person() { Name = "UpdateTest", IsMarried = false, DateOfBirth = DateTime.Today, };
+
+UpdateCommand<Person> cmd = new UpdateCommand<Person>(connection, "People");
+cmd.Map("IsMarried", i => i.IsMarried);
+
+cmd.Execute(person);
+```
+
+### DELETE
+
+Also like with Update Commands you have to specify either a key mapping or and/or a filter condition for deleting records.
+
+The following example shows how to delete a person with a specific filter criteria:
+
+```csharp
+DeleteCommand<Person> cmd = new DeleteCommand<Person>(_Connection, "People");
+
+cmd.Filter = new FilterComparison("IsMarried", FilterComparisonOperatorEnum.ExactlyEqual, true);
+
+cmd.Execute();
+```
+
+Another way is to specify a key mapping:
+
+```csharp
+// prepare people for deletion (only id needed)
+IEnumerable<Person> people = new List<Person>() {
+    new Person() { Id = 3 },
+    new Person() { Id = 4 },
+};
+
+DeleteCommand<Person> cmd = new DeleteCommand<Person>(connection, "People");
+
+cmd.MapKey("Id", p => p.Id);
+
+cmd.Execute(people);
+```
+
+### Working with Filters
+
+In the examples above filters are only used to specify one criteria. But they can also be used in groups.
+
+```csharp
+var people = connection.Select<Person>(@"SELECT * FROM people")
+    .Where(FilterGroup.New()
+    .Add("Name", FilterComparisonOperatorEnum.Equal, "mike")
+    .Add("IsMarried", FilterComparisonOperatorEnum.Equal, false));
+```
+In MySQL that would result in something like this:
+
+```sql
+SELECT sub1.* FROM (SELECT * FROM people) AS sub1 
+WHERE ( 
+    `Name` LIKE @param1 
+AND `IsMarried` LIKE @param2)
+```
+
+Or a nested Filter Group:
+
+```csharp
+var people = connection.Select<Person>(@"SELECT * FROM people")
+    .Where(FilterGroup.New()
+    .Add(FilterGroup.New(FilterGroupOperatorEnum.Or)
+        .Add("Name", FilterComparisonOperatorEnum.Equal, "mike")
+        .Add("Name", FilterComparisonOperatorEnum.Equal, "samuel"))
+    .Add("IsMarried", FilterComparisonOperatorEnum.Equal, false));
+```
+In MySQL that would result in something like this:
+
+```sql
+SELECT sub1.* FROM (SELECT * FROM people) AS sub1 
+WHERE (
+    ( `Name` LIKE @param1 OR `Name` LIKE @param2)
+AND `IsMarried` LIKE @param3)
+```
+
 
 
 ## FAQ
