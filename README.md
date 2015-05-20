@@ -283,6 +283,7 @@ The unit test project (Workbooster.ObjectDbMapper.Test) needs:
 
 Directory | Description
 ----------| -------------
+/doc | contains some files used for the documentation
 /src | the source code (Visual Studio Solution and Projects)
 /src/Workbooster.ObjectDbMapper.Test | Some NUnit tests that also show how the library can be used.
 
