@@ -23,9 +23,11 @@ public class Person
 Now we can use the Select<T>(...) extension method on the DbConnection
 
 ```csharp
-// write a usual SQL-Statement to select the data
+// Write a usual SQL-Statement to select the data
 IEnumerable<Person> people = connection
     .Select<Person>(@"SELECT * FROM people WHERE IsMarried = 1");
+    
+// Result: All married people are loaded
 ```
 
 Instead of writing a SQL WHERE clause you can use a filter:
@@ -34,9 +36,11 @@ Instead of writing a SQL WHERE clause you can use a filter:
 IEnumerable<Person> people = connection
     .Select<Person>(@"SELECT * FROM people")
     .Where(new FilterComparison("IsMarried", FilterComparisonOperatorEnum.ExactlyEqual, true));
+    
+// Result: All married people are loaded
 ```
 
-You are also free to do something like that:
+You are also free to use more complex SQL statements:
 
 ```csharp
 public class PersonAddressData
@@ -64,6 +68,8 @@ WHERE adr.IsPrimary = 1";
         // Do something with the data ...
     }
 }
+
+// Result: All people with their primary address are loaded.
 ```
 
 The only important thing is that the column name returned by the SQL statement matches the name of a public field or property in the model class. Otherwise the data will not be mapped (no error occures!).
@@ -102,12 +108,16 @@ cmd.CreateDynamicMappings(ignoredFieldsForDynamicMapping);
 
 // Run the insert command for the given list of people
 cmd.Execute(people);
+
+// Result: Three people are inserted (with Id=null - what usually triggers an auto increment)
 ```
 
 It is also possible to manually create a mapping by giving the column name and a lambda expression ("i" is the current object, that will be inserted):
 
 ```csharp
 cmd.Map("PersonName", i => i.Name);
+
+// Result: The property "Name" is mapped to the database column "PersonName"
 ```
 
 That also allows you to add some business logic when mapping a field/property to a column:
@@ -123,6 +133,8 @@ cmd.Map("PersonName", i => {
         return i.Name;
     }
 });
+
+// Result: The column "PersonName" gets the value "Unknown" if the property "Name" contains an empty string
 ```
 
 ### UPDATE
@@ -139,6 +151,8 @@ cmd.CreateDynamicMappings();
 cmd.MapKey("Id", p => p.Id); // Maps the column "Id" with the property "Id" from the model
 
 cmd.Execute(person);
+
+// Result: The person with Id=2 gets the name "UpdateTest" and the date of today as birthday.
 ```
 
 Or you can instead use a filter:
@@ -155,9 +169,12 @@ cmd.RemoveMapping("Id"); // You can also remove mappings created by the dynamic 
 cmd.Filter = new FilterComparison("IsMarried", FilterComparisonOperatorEnum.ExactlyEqual, true);
 
 cmd.Execute(person);
+
+// Result: The name of all married people is set to "UpdateTest" and their birthday is set to today.
 ```
 
-And of course you can specify the field mappings by yourself. In the following example only the column "IsMarried" is updated (it is set to "false" for all people because there is no filter):
+And of course you can specify the field mappings by yourself:
+
 ```csharp
 // Create a "template person"
 Person person = new Person() { Name = "UpdateTest", IsMarried = false, DateOfBirth = DateTime.Today, };
@@ -166,6 +183,8 @@ UpdateCommand<Person> cmd = new UpdateCommand<Person>(connection, "People");
 cmd.Map("IsMarried", i => i.IsMarried);
 
 cmd.Execute(person);
+
+// Result: The column "IsMarried" is set to "false" for all people because there is no filter.
 ```
 
 ### DELETE
@@ -175,11 +194,12 @@ Also like with Update Commands you have to specify either a key mapping or and/o
 The following example shows how to delete a person with a specific filter criteria:
 
 ```csharp
-DeleteCommand<Person> cmd = new DeleteCommand<Person>(_Connection, "People");
+DeleteCommand<Person> cmd = new DeleteCommand<Person>(connection, "People");
 
 cmd.Filter = new FilterComparison("IsMarried", FilterComparisonOperatorEnum.ExactlyEqual, true);
 
 cmd.Execute();
+// Result: All people that are married are removed.
 ```
 
 Another way is to specify a key mapping:
@@ -196,6 +216,8 @@ DeleteCommand<Person> cmd = new DeleteCommand<Person>(connection, "People");
 cmd.MapKey("Id", p => p.Id);
 
 cmd.Execute(people);
+
+// Result: The people with Id 3 and 4 are removed.
 ```
 
 ### Working with Filters
