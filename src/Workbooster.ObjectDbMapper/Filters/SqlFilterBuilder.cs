@@ -22,14 +22,19 @@ namespace Workbooster.ObjectDbMapper.Filters
         #region PROPERTIES
 
         public DbConnection Connection { get; set; }
+
+        /// <summary>
+        /// Is optional and can be left empty.
+        /// </summary>
         public EntityDefinition Entity { get; private set; }
+
         public List<DbParameter> Parameters { get; set; }
 
         #endregion
 
         #region PUBLIC METHODS
 
-        public SqlFilterBuilder(DbConnection connection, EntityDefinition entity)
+        public SqlFilterBuilder(DbConnection connection, EntityDefinition entity = null)
         {
             Connection = connection;
             Entity = entity;
@@ -61,9 +66,10 @@ namespace Workbooster.ObjectDbMapper.Filters
 
         private string GetFilterText(FilterComparison filter)
         {
-            if (Entity.EntityType.IsAssignableFrom(typeof(Record)))
+            if (Entity == null
+                || Entity.EntityType.IsAssignableFrom(typeof(Record)))
             {
-                // handle the request for an anonymous record data type
+                // handle the request for an unknow entity type or an anonymous record data type
 
                 string text = "";
 
