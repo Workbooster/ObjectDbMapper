@@ -10,6 +10,11 @@ using Workbooster.ObjectDbMapper.Reflection;
 
 namespace Workbooster.ObjectDbMapper
 {
+    /// <summary>
+    /// A query stores all the information used to send an SQL SELECT command to the database.
+    /// At the moment the Query is enumerated the SQL command is executed. Until then the query can be configured (adding filters, mappings etc.)
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class Query<T> : IEnumerable<T> where T : new()
     {
         #region MEMBERS
