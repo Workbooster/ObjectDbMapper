@@ -167,5 +167,19 @@ namespace Workbooster.ObjectDbMapper
                     return String.Format("\"{0}\"", name);
             }
         }
+
+        public static string EscapeText(this DbConnection connection, string text)
+        {
+            switch (connection.GetDatabaseType())
+            {
+                case DatabaseEngineEnum.MSSQL:
+                    return String.Format("'{0}'", text);
+                case DatabaseEngineEnum.MySQL:
+                    return String.Format("'{0}'", text);
+                default:
+                    // ANSI SQL default
+                    return String.Format("'{0}'", text);
+            }
+        }
     }
 }
