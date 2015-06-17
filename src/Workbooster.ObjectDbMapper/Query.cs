@@ -18,6 +18,7 @@ namespace Workbooster.ObjectDbMapper
         /// only used to create DbParameters
         /// </summary>
         private DbCommand _FactoryCommand;
+        private Dictionary<string, Action<T, object>> _ManualMappings = new Dictionary<string, Action<T, object>>();
 
         #endregion
 
@@ -81,6 +82,25 @@ namespace Workbooster.ObjectDbMapper
             return GetEnumerator();
         }
 
+        /// <summary>
+        /// Manually map a column from the sql query result.
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public Query<T> Map(string columnName, Action<T, object> action)
+        {
+            this._ManualMappings.Add(columnName, action);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Append a filter for the where condition.
+        /// For each filter a sub-query is added that filters the result of the recent sub-query.
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <returns></returns>
         public Query<T> Where(IFilter filter)
         {
             this.Filters.Add(filter);
@@ -187,10 +207,38 @@ namespace Workbooster.ObjectDbMapper
                     {
                         T item = new T();
 
-                        foreach (var columnInfo in dictOfFoundPropertiesAndFields)
+                        for (int i = 0; i < reader.FieldCount; i++)
                         {
-                            object value = ConvertValue(reader, columnInfo.Key, columnInfo.Value);
-                            columnInfo.Value.SetValue<T>(item, value);
+                            string name = reader.GetName(i);
+                            object value = reader.GetValue(i);
+
+                            if (_ManualMappings.ContainsKey(name))
+                            {
+                                // A manual mapping for this column is specified
+
+                                try
+                                {
+                                    // Execute the mapping function.
+                                    // Specify the the current instance of the data class and the current value as parameters.
+
+                                    value = value == DBNull.Value ? null : value; // exchange DBNull with null
+                                    _ManualMappings[name](item, value);
+                                }
+                                catch (Exception ex)
+                                {
+                                    throw new Exception(String.Format(
+                                        "Error while trying to assign the value '{0}' from the column '{1}' by using manual mapping. Message: {2}",
+                                        value, name, ex.Message), ex);
+                                }
+                            }
+                            else if(dictOfFoundPropertiesAndFields.ContainsKey(i))
+                            {
+                                // Automatically assign the value to a property or a field of the data class
+
+                                var columnInfo = dictOfFoundPropertiesAndFields[i];
+                                object convertedValue = ConvertValue(value, columnInfo);
+                                columnInfo.SetValue<T>(item, convertedValue);
+                            }
                         }
 
                         yield return item;
@@ -204,11 +252,8 @@ namespace Workbooster.ObjectDbMapper
             }
         }
 
-        private object ConvertValue(DbDataReader reader, int index, FieldDefinition field)
+        private object ConvertValue(object value, FieldDefinition field)
         {
-            // read the value
-            object value = reader.GetValue(index);
-
             // check for null value in combination with not nullable types
 
             if ((field.MemberType.IsValueType && Nullable.GetUnderlyingType(field.MemberType) == null)
