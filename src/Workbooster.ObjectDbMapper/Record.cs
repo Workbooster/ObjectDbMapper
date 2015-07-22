@@ -18,7 +18,7 @@ namespace Workbooster.ObjectDbMapper
         /// <returns></returns>
         public List<KeyValuePair<string, string>> ToListOfKeyValueStringPairs()
         {
-            return this.Select(v => new KeyValuePair<string, string>(v.Key, v.Value.ToString())).ToList();
+            return this.Select(v => new KeyValuePair<string, string>(v.Key, v.Value == null ? null : v.Value.ToString())).ToList();
         }
 
         #endregion
