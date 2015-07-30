@@ -129,7 +129,17 @@ namespace Workbooster.ObjectDbMapper
                     // create a new sub-query for each filter/filter group
                     subCounter++;
                     string filterSql = filterBuilder.GetFilterText(filter);
-                    sql = String.Format("SELECT sub{0}.* FROM ({1}) AS sub{0} WHERE ({2})", subCounter, sql, filterSql);
+
+                    if (string.IsNullOrEmpty(filterSql) == false)
+                    {
+                        filterSql = string.Format("WHERE ({0})", filterSql);
+                    }
+                    else
+                    {
+                        filterSql = "";
+                    }
+
+                    sql = String.Format("SELECT sub{0}.* FROM ({1}) AS sub{0} {2}", subCounter, sql, filterSql);
                 }
 
                 Parameters.AddRange(filterBuilder.Parameters);

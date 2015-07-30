@@ -66,6 +66,9 @@ namespace Workbooster.ObjectDbMapper.Filters
 
         private string GetFilterText(FilterComparison filter)
         {
+            if (filter == null || String.IsNullOrEmpty(filter.FieldName))
+                return "";
+
             FieldDefinition field = null;
 
             if (Entity != null
@@ -203,28 +206,35 @@ namespace Workbooster.ObjectDbMapper.Filters
             string sql = "";
             bool isFirst = true;
 
-            foreach (var filter in group.Filters)
+            if (group.Filters != null && group.Filters.Count > 0)
             {
-                if (isFirst == true)
+                foreach (var filter in group.Filters)
                 {
-                    isFirst = false;
-                }
-                else
-                {
-                    sql += " " + FilterUtilities.GetSqlGroupOperator(group.Operatror);
-                }
+                    // catch empty filter groups
+                    if ((filter is FilterGroup && (((FilterGroup)filter).Filters == null || ((FilterGroup)filter).Filters.Count == 0)) == false)
+                    {
+                        if (isFirst == true)
+                        {
+                            isFirst = false;
+                        }
+                        else
+                        {
+                            sql += " " + FilterUtilities.GetSqlGroupOperator(group.Operatror);
+                        }
 
-                if (filter is FilterGroup)
-                {
-                    sql += "(" + GetFilterText((FilterGroup)filter) + ")";
-                }
-                else if (filter is FilterComparison)
-                {
-                    sql += GetFilterText((FilterComparison)filter);
-                }
-                else
-                {
-                    throw new Exception(String.Format("Unknown filter: '{0}'", filter.GetType().Name));
+                        if (filter is FilterGroup)
+                        {
+                            sql += "(" + GetFilterText((FilterGroup)filter) + ")";
+                        }
+                        else if (filter is FilterComparison)
+                        {
+                            sql += GetFilterText((FilterComparison)filter);
+                        }
+                        else
+                        {
+                            throw new Exception(String.Format("Unknown filter: '{0}'", filter.GetType().Name));
+                        }
+                    }
                 }
             }
 
