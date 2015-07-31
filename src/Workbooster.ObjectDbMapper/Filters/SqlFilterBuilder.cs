@@ -69,6 +69,22 @@ namespace Workbooster.ObjectDbMapper.Filters
             if (filter == null || String.IsNullOrEmpty(filter.FieldName))
                 return "";
 
+            // catch null values
+
+            if (filter.Value == null)
+            {
+                if (filter.Operator == FilterComparisonOperatorEnum.Equal
+                    || filter.Operator == FilterComparisonOperatorEnum.ExactlyEqual)
+                {
+                    return String.Format(" {0} IS NULL", Connection.EscapeObjectName(filter.FieldName));
+                }
+                else if (filter.Operator == FilterComparisonOperatorEnum.NotEqual
+                          || filter.Operator == FilterComparisonOperatorEnum.ExactlyNotEqual)
+                {
+                    return String.Format(" {0} IS NOT NULL", Connection.EscapeObjectName(filter.FieldName));
+                }
+            }
+
             FieldDefinition field = null;
 
             if (Entity != null

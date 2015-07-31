@@ -104,5 +104,29 @@ namespace Workbooster.ObjectDbMapper.Test.Query_Test
                 Assert.AreEqual(2, people.Count());
             }
         }
+
+        [Test]
+        public void Reading_Records_Filtered_By_IS_NULL_Works()
+        {
+            using (_Connection)
+            {
+                var people = _Connection.Select<Person>(@"SELECT * FROM people")
+                    .Where(new FilterComparison("PlaceOfBirth", FilterComparisonOperatorEnum.Equal, null));
+
+                Assert.AreEqual(7, people.Count());
+            }
+        }
+
+        [Test]
+        public void Reading_Records_Filtered_By_IS_NOT_NULL_Works()
+        {
+            using (_Connection)
+            {
+                var people = _Connection.Select<Person>(@"SELECT * FROM people")
+                    .Where(new FilterComparison("PlaceOfBirth", FilterComparisonOperatorEnum.NotEqual, null));
+
+                Assert.AreEqual(2, people.Count());
+            }
+        }
     }
 }
