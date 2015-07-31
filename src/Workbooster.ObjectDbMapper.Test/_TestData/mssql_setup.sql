@@ -26,17 +26,17 @@ CREATE TABLE [dbo].[Addresses] (
     [IsPrimary]      TINYINT       NOT NULL,
     [DateOfCreation] DATETIME      DEFAULT (((1900)-(1))-(1)) NOT NULL,
     PRIMARY KEY CLUSTERED ([Id] ASC),
-    CONSTRAINT [FK_Addresses_ToPeople] FOREIGN KEY ([IdPerson]) REFERENCES [dbo].[People] ([Id])
+    CONSTRAINT [FK_Addresses_ToPeople] FOREIGN KEY ([IdPerson]) REFERENCES [dbo].[People] ([Id]) ON DELETE CASCADE
 );
 
 SET IDENTITY_INSERT [dbo].[People] ON
 INSERT INTO [dbo].[People] ([Id], [Name], [IsMarried], [DateOfBirth], [PlaceOfBirth]) VALUES (2, N'Mike', 0, N'1985-06-13', NULL)
-INSERT INTO [dbo].[People] ([Id], [Name], [IsMarried], [DateOfBirth], [PlaceOfBirth]) VALUES (3, N'Steve', 0, N'1978-02-03', NULL)
+INSERT INTO [dbo].[People] ([Id], [Name], [IsMarried], [DateOfBirth], [PlaceOfBirth]) VALUES (3, N'Steve', 0, N'1978-02-03', 'Toronto')
 INSERT INTO [dbo].[People] ([Id], [Name], [IsMarried], [DateOfBirth], [PlaceOfBirth]) VALUES (4, N'Meg', 1, N'1965-03-09', NULL)
 INSERT INTO [dbo].[People] ([Id], [Name], [IsMarried], [DateOfBirth], [PlaceOfBirth]) VALUES (5, N'Melanie', 0, N'1988-11-27', NULL)
 INSERT INTO [dbo].[People] ([Id], [Name], [IsMarried], [DateOfBirth], [PlaceOfBirth]) VALUES (6, N'Becky', 0, N'1972-08-21', NULL)
 INSERT INTO [dbo].[People] ([Id], [Name], [IsMarried], [DateOfBirth], [PlaceOfBirth]) VALUES (7, N'Larry', 0, N'1969-01-26', NULL)
-INSERT INTO [dbo].[People] ([Id], [Name], [IsMarried], [DateOfBirth], [PlaceOfBirth]) VALUES (8, N'Mike', 1, N'1953-09-23', NULL)
+INSERT INTO [dbo].[People] ([Id], [Name], [IsMarried], [DateOfBirth], [PlaceOfBirth]) VALUES (8, N'Mike', 1, N'1953-09-23', 'Halifax')
 INSERT INTO [dbo].[People] ([Id], [Name], [IsMarried], [DateOfBirth], [PlaceOfBirth]) VALUES (9, N'mike', 0, N'1972-02-22', NULL)
 INSERT INTO [dbo].[People] ([Id], [Name], [IsMarried], [DateOfBirth], [PlaceOfBirth]) VALUES (10, N'Samuel', 1, N'1958-11-27', NULL)
 SET IDENTITY_INSERT [dbo].[People] OFF

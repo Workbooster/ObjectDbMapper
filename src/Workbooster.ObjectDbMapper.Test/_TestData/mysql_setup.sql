@@ -27,12 +27,12 @@ ALTER TABLE `addresses`
 
 
 INSERT INTO `People` (`Id`, `Name`, `IsMarried`, `DateOfBirth`, `PlaceOfBirth`) VALUES (2, 'Mike', 0, '1985-06-13', NULL);
-INSERT INTO `People` (`Id`, `Name`, `IsMarried`, `DateOfBirth`, `PlaceOfBirth`) VALUES (3, 'Steve', 0, '1978-02-03', NULL);
+INSERT INTO `People` (`Id`, `Name`, `IsMarried`, `DateOfBirth`, `PlaceOfBirth`) VALUES (3, 'Steve', 0, '1978-02-03', 'Toronto');
 INSERT INTO `People` (`Id`, `Name`, `IsMarried`, `DateOfBirth`, `PlaceOfBirth`) VALUES (4, 'Meg', 1, '1965-03-09', NULL);
 INSERT INTO `People` (`Id`, `Name`, `IsMarried`, `DateOfBirth`, `PlaceOfBirth`) VALUES (5, 'Melanie', 0, '1988-11-27', NULL);
 INSERT INTO `People` (`Id`, `Name`, `IsMarried`, `DateOfBirth`, `PlaceOfBirth`) VALUES (6, 'Becky', 0, '1972-08-21', NULL);
 INSERT INTO `People` (`Id`, `Name`, `IsMarried`, `DateOfBirth`, `PlaceOfBirth`) VALUES (7, 'Larry', 0, '1969-01-26', NULL);
-INSERT INTO `People` (`Id`, `Name`, `IsMarried`, `DateOfBirth`, `PlaceOfBirth`) VALUES (8, 'Mike', 1, '1953-09-23', NULL);
+INSERT INTO `People` (`Id`, `Name`, `IsMarried`, `DateOfBirth`, `PlaceOfBirth`) VALUES (8, 'Mike', 1, '1953-09-23', 'Halifax');
 INSERT INTO `People` (`Id`, `Name`, `IsMarried`, `DateOfBirth`, `PlaceOfBirth`) VALUES (9, 'mike', 0, '1972-02-22', NULL);
 INSERT INTO `People` (`Id`, `Name`, `IsMarried`, `DateOfBirth`, `PlaceOfBirth`) VALUES (10, 'Samuel', 1, '1958-11-27', NULL);
 
