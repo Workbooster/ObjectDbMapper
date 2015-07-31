@@ -100,7 +100,7 @@ SELECT COUNT(*) FROM People WHERE Name = 'UpdateTest'";
                 // get expected value
                 var expectedCmd = _Connection.CreateCommand();
                 expectedCmd.CommandText = @"
-SELECT COUNT(*) FROM People WHERE IsMarried = TRUE";
+SELECT COUNT(*) FROM People WHERE IsMarried = 1";
 
                 int numberOfPeopleBeforeUpdate = Convert.ToInt32(expectedCmd.ExecuteScalar());
 
