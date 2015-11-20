@@ -23,6 +23,8 @@ namespace Workbooster.ObjectDbMapper.Commands
         /// </summary>
         public IFilter Filter { get; set; }
 
+        public DbTransaction Transaction { get; set; }
+
         #endregion
 
         #region PUBLIC METHODS
@@ -132,6 +134,10 @@ namespace Workbooster.ObjectDbMapper.Commands
             foreach (var item in listOfItemsOtUpdate)
             {
                 DbCommand cmd = Connection.CreateCommand();
+
+                // use the transaction if one is specified 
+                if (this.Transaction != null)
+                    cmd.Transaction = this.Transaction;
 
                 // get the where conditions for the dynamic key columns
                 List<DbParameter> keyWhereParameters = new List<DbParameter>();

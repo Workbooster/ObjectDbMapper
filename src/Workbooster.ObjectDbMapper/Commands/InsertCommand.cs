@@ -21,6 +21,8 @@ namespace Workbooster.ObjectDbMapper.Commands
 
         public object LastIdentity { get; private set; }
 
+        public DbTransaction Transaction { get; set; }
+
         #endregion
 
         #region PUBLIC METHODS
@@ -110,6 +112,10 @@ namespace Workbooster.ObjectDbMapper.Commands
             {
                 DbCommand cmd = Connection.CreateCommand();
                 cmd.CommandText = insertStatement;
+
+                // use the transaction if one is specified 
+                if (this.Transaction != null)
+                    cmd.Transaction = this.Transaction;
 
                 foreach (var mapping in _ColumnMappings)
                 {

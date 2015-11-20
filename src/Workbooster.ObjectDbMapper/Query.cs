@@ -30,6 +30,7 @@ namespace Workbooster.ObjectDbMapper
         #region PROPERTIES
 
         public DbConnection Connection { get; set; }
+        public DbTransaction Transaction { get; set; }
         public string BaseSql { get; set; }
         public EntityDefinition Entity { get; private set; }
         public List<DbParameter> Parameters { get; set; }
@@ -76,6 +77,10 @@ namespace Workbooster.ObjectDbMapper
             }
 
             DbCommand sqlCmd = GetDbCommand(Connection);
+
+            // use the transaction if one is specified 
+            if (this.Transaction != null)
+                sqlCmd.Transaction = this.Transaction;
 
             DbDataReader reader = sqlCmd.ExecuteReader();
 
@@ -158,6 +163,10 @@ namespace Workbooster.ObjectDbMapper
             string sql = GetSql();
 
             DbCommand sqlCmd = Connection.CreateCommand();
+
+            // use the transaction if one is specified 
+            if (this.Transaction != null)
+                sqlCmd.Transaction = this.Transaction;
 
             if (Parameters != null && Parameters.Count > 0)
             {

@@ -26,6 +26,8 @@ namespace Workbooster.ObjectDbMapper.Commands
         /// </summary>
         public IFilter Filter { get; set; }
 
+        public DbTransaction Transaction { get; set; }
+
         #endregion
 
         #region PUBLIC METHODS
@@ -114,6 +116,10 @@ namespace Workbooster.ObjectDbMapper.Commands
 
                 DbCommand cmd = Connection.CreateCommand();
 
+                // use the transaction if one is specified 
+                if (this.Transaction != null)
+                    cmd.Transaction = this.Transaction;
+
                 // build the delete statement from the DELETE command and the WHERE conditions
                 cmd.CommandText = deleteCommand + GetSqlWhereCommand(staticWhereConditions, null);
 
@@ -129,6 +135,10 @@ namespace Workbooster.ObjectDbMapper.Commands
                     // loop threw all items and work with key contition mappings
 
                     DbCommand cmd = Connection.CreateCommand();
+
+                    // use the transaction if one is specified 
+                    if (this.Transaction != null)
+                        cmd.Transaction = this.Transaction;
 
                     // get the where conditions for the dynamic key columns
                     List<DbParameter> keyWhereParameters = new List<DbParameter>();
