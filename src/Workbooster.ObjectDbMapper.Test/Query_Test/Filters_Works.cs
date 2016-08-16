@@ -17,6 +17,7 @@ namespace Workbooster.ObjectDbMapper.Test.Query_Test
             public int Id { get; set; }
             public string Name { get; set; }
             public bool IsMarried { get; set; }
+            public DateTime DateOfBirth { get; set; }
         }
 
         private DbConnection _Connection;
@@ -72,6 +73,18 @@ namespace Workbooster.ObjectDbMapper.Test.Query_Test
             {
                 var people = _Connection.Select<Person>(@"SELECT * FROM people")
                     .Where(new FilterComparison("Id", FilterComparisonOperatorEnum.Equal, 8));
+
+                Assert.AreEqual(1, people.Count());
+            }
+        }
+
+        [Test]
+        public void Reading_Records_Filtered_By_DateTime_Works()
+        {
+            using (_Connection)
+            {
+                var people = _Connection.Select<Person>(@"SELECT * FROM people")
+                    .Where(new FilterComparison("DateOfBirth", FilterComparisonOperatorEnum.ExactlyEqual, new DateTime(1988, 11, 27)));
 
                 Assert.AreEqual(1, people.Count());
             }
